@@ -61,37 +61,39 @@
 
     <!-- Chess Menu -->
     <div id="chess-menu-screen" class="screen hidden">
-      <header class="title-block chess-title-block">
-        <h1 class="game-title chess-title">象棋</h1>
-        <p class="subtitle">選擇棋種與模式</p>
-      </header>
-      <div id="chess-variant-panel">
-        <nav class="menu-nav">
-          <button class="menu-btn accent" data-chess-variant="xiangqi">一般象棋</button>
-          <button class="menu-btn accent" data-chess-variant="dark">暗棋</button>
-        </nav>
-      </div>
-      <div id="chess-mode-panel" class="hidden">
-        <p id="chess-variant-title" class="chess-variant-title"></p>
-        <nav class="menu-nav chess-mode-nav">
-          <button class="menu-btn" data-chess-play="local">雙人同機</button>
-          <button class="menu-btn" data-chess-play="ai">單人對 AI</button>
-          <button class="menu-btn accent" data-chess-play="online">線上對戰</button>
-          <button id="chess-mode-back" type="button" class="menu-btn">返回選擇棋種</button>
-        </nav>
-        <div id="chess-ai-difficulty" class="difficulty-panel hidden">
-          <p>AI 難度</p>
-          <div class="difficulty-btns chess-diff-btns">
-            <button class="diff-btn chess-diff-btn" data-chess-diff="easy">簡單</button>
-            <button class="diff-btn chess-diff-btn active" data-chess-diff="normal">普通</button>
-            <button class="diff-btn chess-diff-btn" data-chess-diff="hard">困難</button>
-          </div>
-          <button id="chess-start-ai-btn" type="button" class="menu-btn accent">開始對戰</button>
+      <div class="chess-menu-inner">
+        <header class="title-block chess-title-block">
+          <h1 class="game-title chess-title">象棋</h1>
+          <p class="subtitle chess-subtitle">選擇棋種與模式</p>
+        </header>
+        <div id="chess-variant-panel">
+          <nav class="menu-nav">
+            <button class="menu-btn accent" data-chess-variant="xiangqi">一般象棋</button>
+            <button class="menu-btn accent" data-chess-variant="dark">暗棋</button>
+          </nav>
         </div>
+        <div id="chess-mode-panel" class="hidden">
+          <p id="chess-variant-title" class="chess-variant-title"></p>
+          <nav class="menu-nav chess-mode-nav">
+            <button class="menu-btn" data-chess-play="local">雙人同機</button>
+            <button class="menu-btn" data-chess-play="ai">單人對 AI</button>
+            <button class="menu-btn accent" data-chess-play="online">線上對戰</button>
+            <button id="chess-mode-back" type="button" class="menu-btn">返回選擇棋種</button>
+          </nav>
+          <div id="chess-ai-difficulty" class="difficulty-panel hidden">
+            <p>AI 難度</p>
+            <div class="difficulty-btns chess-diff-btns">
+              <button class="diff-btn chess-diff-btn" data-chess-diff="easy">簡單</button>
+              <button class="diff-btn chess-diff-btn active" data-chess-diff="normal">普通</button>
+              <button class="diff-btn chess-diff-btn" data-chess-diff="hard">困難</button>
+            </div>
+            <button id="chess-start-ai-btn" type="button" class="menu-btn accent">開始對戰</button>
+          </div>
+        </div>
+        <nav class="menu-nav chess-menu-footer">
+          <button id="chess-hub-back" type="button" class="menu-btn menu-btn--compact">返回遊戲大廳</button>
+        </nav>
       </div>
-      <nav class="menu-nav chess-menu-footer">
-        <button id="chess-hub-back" type="button" class="menu-btn menu-btn--compact">返回遊戲大廳</button>
-      </nav>
     </div>
 
     <!-- Chess Game -->

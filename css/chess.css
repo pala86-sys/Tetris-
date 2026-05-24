@@ -6,14 +6,28 @@
 
 .chess-title {
   font-size: clamp(2.5rem, 8vw, 4rem) !important;
-  letter-spacing: 0.5em !important;
+  letter-spacing: 0.2em !important;
+  text-indent: 0.2em;
+  text-align: center;
+  display: block;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
   background: linear-gradient(135deg, #c9a227, #f4d03f, #e67e22) !important;
   -webkit-background-clip: text !important;
   background-clip: text !important;
 }
 
+.chess-subtitle {
+  letter-spacing: 0.15em;
+  text-indent: 0.15em;
+  text-align: center;
+}
+
 .chess-title-block {
+  width: 100%;
   margin-bottom: 2rem;
+  text-align: center;
 }
 
 .chess-hint {
@@ -29,9 +43,22 @@
   color: var(--accent);
   margin-bottom: 1rem;
   letter-spacing: 0.15em;
+  text-indent: 0.15em;
+  width: 100%;
 }
 
-#chess-menu-screen {
+#chess-menu-screen.screen.active {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.chess-menu-inner {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -40,21 +67,34 @@
 #chess-variant-panel,
 #chess-mode-panel {
   width: 100%;
-  max-width: 420px;
-  margin: 0 auto;
+}
+
+#chess-menu-screen .menu-nav {
+  width: 100%;
+  align-items: center;
+  margin-bottom: 0;
+}
+
+#chess-menu-screen .menu-btn {
+  width: 100%;
+  max-width: 280px;
+  box-sizing: border-box;
 }
 
 #chess-mode-panel .chess-mode-nav {
-  margin-bottom: 0;
+  gap: 0.75rem;
 }
 
 .chess-menu-footer {
+  width: 100%;
   margin-top: 1.5rem;
-  margin-bottom: 0;
+  padding-top: 0;
 }
 
 .chess-menu-footer .menu-btn--compact {
-  min-width: 200px;
+  min-width: unset;
+  width: 100%;
+  max-width: 280px;
   padding: 0.75rem 1.75rem;
 }
 
