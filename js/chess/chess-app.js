@@ -112,6 +112,17 @@ export class ChessApp {
 
   updateHint() {
     if (!this.el.hint) return;
+    const darkRules = '可翻任意 ? 棋 · 移動到 ? 格會翻開比大小';
+    if (this.variant === 'dark') {
+      if (this.isAi) {
+        this.el.hint.textContent = `你是紅方 · ${darkRules}`;
+      } else if (this.isOnline) {
+        this.el.hint.textContent = `${this.localColor === RED ? '你是紅方' : '你是黑方'} · ${darkRules}`;
+      } else {
+        this.el.hint.textContent = `雙人同機 · ${darkRules}`;
+      }
+      return;
+    }
     if (this.isAi) {
       this.el.hint.textContent = '你是紅方 · 點選棋子再點目標格';
     } else if (this.isOnline) {

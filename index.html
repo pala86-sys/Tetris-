@@ -27,26 +27,30 @@
 
     <!-- Tetris Menu -->
     <div id="menu-screen" class="screen hidden">
-      <header class="title-block">
-        <h1 class="game-title">TETRIS</h1>
-        <p class="subtitle">俄羅斯方塊</p>
-      </header>
-      <nav class="menu-nav">
-        <button class="menu-btn" data-mode="solo">單人模式</button>
-        <button class="menu-btn" data-mode="versus-human">雙人 PK — 對戰玩家</button>
-        <button class="menu-btn" data-mode="versus-ai">雙人 PK — 對戰 AI</button>
-        <button class="menu-btn accent" id="online-menu-btn">線上對戰 — 與玩家連線</button>
-      </nav>
-      <div id="ai-difficulty" class="difficulty-panel hidden">
-        <p>AI 難度</p>
-        <div class="difficulty-btns">
-          <button class="diff-btn" data-diff="easy">簡單</button>
-          <button class="diff-btn active" data-diff="normal">普通</button>
-          <button class="diff-btn" data-diff="hard">困難</button>
+      <div class="tetris-menu-inner">
+        <header class="title-block tetris-title-block">
+          <h1 class="game-title tetris-en-title">TETRIS</h1>
+          <p class="game-title cn-menu-title cn-menu-title--wide">俄羅斯方塊</p>
+        </header>
+        <nav class="menu-nav tetris-mode-nav">
+          <button class="menu-btn" data-mode="solo">單人模式</button>
+          <button class="menu-btn" data-mode="versus-human">雙人 PK — 對戰玩家</button>
+          <button class="menu-btn" data-mode="versus-ai">雙人 PK — 對戰 AI</button>
+          <button class="menu-btn accent" id="online-menu-btn">線上對戰 — 與玩家連線</button>
+        </nav>
+        <div id="ai-difficulty" class="difficulty-panel hidden">
+          <p>AI 難度</p>
+          <div class="difficulty-btns">
+            <button class="diff-btn" data-diff="easy">簡單</button>
+            <button class="diff-btn active" data-diff="normal">普通</button>
+            <button class="diff-btn" data-diff="hard">困難</button>
+          </div>
+          <button id="start-ai-btn" type="button" class="menu-btn accent">開始對戰</button>
         </div>
-        <button id="start-ai-btn" class="menu-btn accent">開始對戰</button>
+        <nav class="menu-nav tetris-menu-footer">
+          <button id="tetris-hub-back" type="button" class="menu-btn menu-btn--compact">返回遊戲大廳</button>
+        </nav>
       </div>
-      <button id="tetris-hub-back" class="menu-btn">返回遊戲大廳</button>
       <section class="controls-hint">
         <div class="hint-col">
           <h3>玩家 1</h3>
@@ -63,7 +67,7 @@
     <div id="chess-menu-screen" class="screen hidden">
       <div class="chess-menu-inner">
         <header class="title-block chess-title-block">
-          <h1 class="game-title chess-title">象棋</h1>
+          <h1 class="game-title cn-menu-title">象棋</h1>
           <p class="subtitle chess-subtitle">選擇棋種與模式</p>
         </header>
         <div id="chess-variant-panel">

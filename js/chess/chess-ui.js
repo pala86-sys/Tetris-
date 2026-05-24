@@ -3,7 +3,9 @@ import { getDarkDisplayLabel } from './dark-chess.js';
 
 export function renderChessBoard(container, game) {
   container.innerHTML = '';
-  container.className = `chess-board ${game.mode}`;
+  container.className = 'chess-board-wrap';
+  const boardEl = document.createElement('div');
+  boardEl.className = `chess-board ${game.mode}`;
   const rows = game.board.length;
   const cols = game.board[0].length;
 
@@ -47,9 +49,10 @@ export function renderChessBoard(container, game) {
         cell.classList.add('legal-target');
       }
 
-      container.appendChild(cell);
+      boardEl.appendChild(cell);
     }
   }
+  container.appendChild(boardEl);
 }
 
 export function bindChessBoard(container, onCellClick) {

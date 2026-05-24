@@ -72,6 +72,71 @@ body {
   letter-spacing: 0.5em;
 }
 
+/* Tetris 主選單置中 */
+#menu-screen.screen.active {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.tetris-menu-inner {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tetris-title-block {
+  width: 100%;
+  text-align: center;
+}
+
+.tetris-en-title {
+  font-size: clamp(2rem, 7vw, 3.5rem) !important;
+  letter-spacing: 0.25em !important;
+  text-indent: 0.25em;
+  margin-bottom: 0 !important;
+}
+
+#menu-screen .menu-nav {
+  width: 100%;
+  align-items: center;
+  margin-bottom: 0;
+}
+
+#menu-screen .tetris-mode-nav {
+  gap: 0.75rem;
+}
+
+#menu-screen .menu-btn {
+  width: 100%;
+  max-width: 280px;
+  box-sizing: border-box;
+}
+
+.tetris-menu-footer {
+  width: 100%;
+  margin-top: 1.5rem;
+}
+
+.tetris-menu-footer .menu-btn--compact {
+  min-width: unset;
+  width: 100%;
+  max-width: 280px;
+  padding: 0.75rem 1.75rem;
+}
+
+#menu-screen .controls-hint {
+  width: 100%;
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .menu-nav {
   display: flex;
   flex-direction: column;
