@@ -307,16 +307,20 @@ export class Game {
       const winner = alive[0];
       let msg;
       if (winner) {
-        const name = winner.id === 0 ? '玩家 1' : (this.mode === MODES.VERSUS_AI ? 'AI' : '玩家 2');
-        msg = `${name} 獲勝！`;
+        if (this.mode === MODES.VERSUS_AI) {
+          msg = winner.id === 0 ? '你獲勝！' : 'AI 獲勝！';
+        } else {
+          const name = winner.id === 0 ? '玩家 1' : '玩家 2';
+          msg = `${name} 獲勝！`;
+        }
       } else {
         msg = '平手！';
       }
-      this.endGame('對戰結束', msg);
+      this.endGame('對戰結束', msg, winner);
     }
   }
 
-  endGame(title, msg) {
+  endGame(title, msg, winner = null) {
     this.running = false;
     cancelAnimationFrame(this.animationId);
     if (this.isOnline && !this.localPlayer.alive) {
@@ -328,13 +332,46 @@ export class Game {
       const p = this.players[0];
       stats = `分數：${p.score}<br>等級：${p.level}<br>消除行：${p.lines}`;
     } else {
-      stats = `玩家 1：${this.players[0].score} 分 · ${this.players[0].lines} 行<br>`;
-      const p2Name = this.mode === MODES.VERSUS_AI ? 'AI'
-        : (this.mode === MODES.VERSUS_ONLINE ? '線上對手' : '玩家 2');
-      stats += `${p2Name}：${this.players[1].score} 分 · ${this.players[1].lines} 行`;
+      stats = this.buildVersusStats(winner);
     }
 
     this.ui.showGameOver(title, msg, stats);
+  }
+
+  buildVersusStats(winner) {
+    const p0 = this.players[0];
+    const p1 = this.players[1];
+    const w = winner ?? (p0.alive ? p0 : (p1.alive ? p1 : null));
+    const tag = (p) => {
+      if (!w) return '';
+      return p.id === w.id ? '（獲勝）' : '（敗北）';
+    };
+
+    if (this.mode === MODES.VERSUS_AI) {
+      return (
+        `你${tag(p0)}：${p0.score} 分 · ${p0.lines} 行<br>` +
+        `AI${tag(p1)}：${p1.score} 分 · ${p1.lines} 行` +
+        `<p class="stats-hint">對戰以「對手堆到頂」定勝負，分數高不代表獲勝。</p>`
+      );
+    }
+
+    if (this.isOnline) {
+      const you = this.localPlayer;
+      const opp = this.remotePlayer;
+      const youLabel = you.id === 0 ? '你' : '你';
+      const oppLabel = '線上對手';
+      return (
+        `${youLabel}${tag(you)}：${you.score} 分 · ${you.lines} 行<br>` +
+        `${oppLabel}${tag(opp)}：${opp.score} 分 · ${opp.lines} 行` +
+        `<p class="stats-hint">對戰以「對手堆到頂」定勝負，分數高不代表獲勝。</p>`
+      );
+    }
+
+    return (
+      `玩家 1${tag(p0)}：${p0.score} 分 · ${p0.lines} 行<br>` +
+      `玩家 2${tag(p1)}：${p1.score} 分 · ${p1.lines} 行` +
+      `<p class="stats-hint">對戰以「對手堆到頂」定勝負，分數高不代表獲勝。</p>`
+    );
   }
 
   render() {
