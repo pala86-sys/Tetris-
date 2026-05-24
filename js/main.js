@@ -100,18 +100,18 @@ function showHub() {
 }
 
 function showTetrisMenu() {
-  game.stop();
-  chessApp.stop();
+  game?.stop();
+  chessApp?.stop();
   document.getElementById('ai-difficulty')?.classList.add('hidden');
-  ui.hideGameOver();
-  ui.hidePause();
-  hub.show('tetrisMenu');
+  ui?.hideGameOver();
+  ui?.hidePause();
+  hub?.show('tetrisMenu');
 }
 
 function showChessMenu() {
-  game.stop();
-  chessApp.stop();
-  hub.show('chessMenu');
+  game?.stop();
+  chessApp?.stop();
+  hub?.show('chessMenu');
 }
 
 function bindClick(id, handler) {
@@ -124,29 +124,41 @@ function bindClick(id, handler) {
 }
 
 function initApp() {
-  ui = new UI();
-  game = new Game(ui);
-  lobby = new LobbyUI(ui.elements.lobbyScreen);
-  online = new OnlineController({ game, ui, lobby, onReturnMenu: showTetrisMenu });
-  online.init();
+  try {
+    ui = new UI();
+    game = new Game(ui);
+    lobby = new LobbyUI(ui.elements.lobbyScreen);
+    online = new OnlineController({ game, ui, lobby, onReturnMenu: showTetrisMenu });
+    online.init();
 
-  hub = new Hub({
-    hub: document.getElementById('hub-screen'),
-    tetrisMenu: document.getElementById('menu-screen'),
-    chessMenu: document.getElementById('chess-menu-screen'),
-    chessGame: document.getElementById('chess-game-screen'),
-    game: document.getElementById('game-screen'),
-    lobby: document.getElementById('lobby-screen'),
-  });
+    hub = new Hub({
+      hub: document.getElementById('hub-screen'),
+      tetrisMenu: document.getElementById('menu-screen'),
+      chessMenu: document.getElementById('chess-menu-screen'),
+      chessGame: document.getElementById('chess-game-screen'),
+      game: document.getElementById('game-screen'),
+      lobby: document.getElementById('lobby-screen'),
+    });
 
-  chessApp = new ChessApp({
-    board: document.getElementById('chess-board'),
-    status: document.getElementById('chess-status'),
-    title: document.getElementById('chess-mode-label'),
-  });
+    bindMenuEvents();
+    setupHubDelegation();
 
-  bindMenuEvents();
-  showHub();
+    try {
+      chessApp = new ChessApp({
+        board: document.getElementById('chess-board'),
+        status: document.getElementById('chess-status'),
+        title: document.getElementById('chess-mode-label'),
+      });
+    } catch (err) {
+      console.error('[Game Hall] Chess module failed to load', err);
+      chessApp = { stop() {}, start() {}, reset() {} };
+    }
+
+    showHub();
+  } catch (err) {
+    console.error('[Game Hall] init failed', err);
+    setupHubDelegation();
+  }
 }
 
 function bindMenuEvents() {
@@ -167,13 +179,161 @@ function bindMenuEvents() {
     btn.addEventListener('click', () => {
       unlockAudio();
       const mode = btn.dataset.chess;
-      chessApp.start(mode);
-      hub.show('chessGame');
+      chessApp?.start(mode);
+      hub?.show('chessGame');
     });
   });
 
   bindClick('chess-back-btn', () => showChessMenu());
-  bindClick('chess-reset-btn', () => chessApp.reset());
+  bindClick('chess-reset-btn', () => chessApp?.reset());
+
+  document.querySelectorAll('.menu-btn[data-mode]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      unlockAudio();
+      ui.hideGameOver();
+      ui.hidePause();
+      game.stop();
+      const mode = btn.dataset.mode;
+      if (mode === 'versus-ai') {
+        document.getElementById('ai-difficulty').classList.remove('hidden');
+        pendingMode = MODES.VERSUS_AI;
+      } else {
+        document.getElementById('ai-difficulty').classList.add('hidden');
+        game.start(mode === 'solo' ? MODES.SOLO : MODES.VERSUS_HUMAN);
+      }
+    });
+  });
+
+  document.querySelectorAll('.diff-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.diff-btn').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      aiDifficulty = btn.dataset.diff;
+    });
+  });
+
+  bindClick('start-ai-btn', () => {
+    unlockAudio();
+    ui.hideGameOver();
+    game.start(MODES.VERSUS_AI, { difficulty: aiDifficulty });
+  });
+
+  bindClick('back-btn', () => {
+    stopAllRepeaters();
+    if (game.isOnline) online.leave();
+    game.stop();
+    showTetrisMenu();
+  });
+
+  bindClick('pause-btn', () => game.pause());
+  bindClick('resume-btn', () => game.resume());
+  bindClick('quit-btn', () => {
+    stopAllRepeaters();
+    if (game.isOnline) online.leave();
+    game.stop();
+    showTetrisMenu();
+  });
+
+  bindClick('restart-btn', () => game.restart());
+  bindClick('menu-btn', () => {
+    stopAllRepeaters();
+    if (game.isOnline) online.leave();
+    game.stop();
+    showTetrisMenu();
+  });
+
+  bindClick('online-menu-btn', () => {
+    unlockAudio();
+    ui.hideGameOver();
+    ui.hidePause();
+    game.stop();
+    chessApp?.stop();
+    document.getElementById('ai-difficulty').classList.add('hidden');
+    document.getElementById('hub-screen')?.classList.add('hidden');
+    document.getElementById('chess-menu-screen')?.classList.add('hidden');
+    document.getElementById('chess-game-screen')?.classList.add('hidden');
+    ui.elements.lobbyScreen.classList.remove('hidden');
+    ui.showScreen(ui.elements.lobbyScreen);
+    lobby.show();
+    lobby.showCreate();
+  });
+
+  bindClick('lobby-back-btn', () => {
+    online.leave();
+    showTetrisMenu();
+  });
+
+  bindClick('show-join-btn', () => lobby.showJoin());
+  bindClick('join-back-btn', () => lobby.showCreate());
+
+  bindClick('create-room-btn', async () => {
+    unlockAudio();
+    lobby.clearError();
+    try {
+      await online.createRoom();
+    } catch (e) {
+      lobby.setError(e.message || '連線失敗');
+    }
+  });
+
+  bindClick('join-room-btn', async () => {
+    unlockAudio();
+    const code = lobby.getJoinCode();
+    if (code.length < 4) {
+      lobby.setError('請輸入房間代碼');
+      return;
+    }
+    lobby.clearError();
+    try {
+      await online.joinRoom(code);
+    } catch (e) {
+      lobby.setError(e.message || '連線失敗');
+    }
+  });
+
+  bindClick('ready-btn', () => {
+    unlockAudio();
+    online.ready();
+  });
+
+  bindClick('leave-room-btn', () => {
+    online.leave();
+    showTetrisMenu();
+  });
+
+  bindClick('copy-code-btn', async () => {
+    const code = document.getElementById('room-code')?.textContent;
+    if (!code) return;
+    try {
+      await navigator.clipboard.writeText(code);
+      lobby.setStatus('已複製房間代碼');
+    } catch {
+      lobby.setStatus(`房間代碼：${code}`);
+    }
+  });
+}
+
+function setupHubDelegation() {
+  const app = document.getElementById('app');
+  if (!app || app.dataset.hubNav === '1') return;
+  app.dataset.hubNav = '1';
+
+  app.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+
+    if (btn.id === 'hub-tetris-btn') {
+      e.preventDefault();
+      unlockAudio();
+      showTetrisMenu();
+      return;
+    }
+    if (btn.id === 'hub-chess-btn') {
+      e.preventDefault();
+      unlockAudio();
+      showChessMenu();
+    }
+  });
 }
 
 function localPlayerIndex() {
@@ -328,132 +488,6 @@ function stopAllRepeaters() {
 
 function unlockAudio() {
   sounds.unlock();
-}
-
-  document.querySelectorAll('.menu-btn[data-mode]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      unlockAudio();
-      ui.hideGameOver();
-      ui.hidePause();
-      game.stop();
-      const mode = btn.dataset.mode;
-      if (mode === 'versus-ai') {
-        document.getElementById('ai-difficulty').classList.remove('hidden');
-        pendingMode = MODES.VERSUS_AI;
-      } else {
-        document.getElementById('ai-difficulty').classList.add('hidden');
-        game.start(mode === 'solo' ? MODES.SOLO : MODES.VERSUS_HUMAN);
-      }
-    });
-  });
-
-  document.querySelectorAll('.diff-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.diff-btn').forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-      aiDifficulty = btn.dataset.diff;
-    });
-  });
-
-  bindClick('start-ai-btn', () => {
-    unlockAudio();
-    ui.hideGameOver();
-    game.start(MODES.VERSUS_AI, { difficulty: aiDifficulty });
-  });
-
-  bindClick('back-btn', () => {
-    stopAllRepeaters();
-    if (game.isOnline) online.leave();
-    game.stop();
-    showTetrisMenu();
-  });
-
-  bindClick('pause-btn', () => game.pause());
-  bindClick('resume-btn', () => game.resume());
-  bindClick('quit-btn', () => {
-    stopAllRepeaters();
-    if (game.isOnline) online.leave();
-    game.stop();
-    showTetrisMenu();
-  });
-
-  bindClick('restart-btn', () => game.restart());
-  bindClick('menu-btn', () => {
-    stopAllRepeaters();
-    if (game.isOnline) online.leave();
-    game.stop();
-    showTetrisMenu();
-  });
-
-  bindClick('online-menu-btn', () => {
-    unlockAudio();
-    ui.hideGameOver();
-    ui.hidePause();
-    game.stop();
-    chessApp.stop();
-    document.getElementById('ai-difficulty').classList.add('hidden');
-    document.getElementById('hub-screen')?.classList.add('hidden');
-    document.getElementById('chess-menu-screen')?.classList.add('hidden');
-    document.getElementById('chess-game-screen')?.classList.add('hidden');
-    ui.elements.lobbyScreen.classList.remove('hidden');
-    ui.showScreen(ui.elements.lobbyScreen);
-    lobby.show();
-    lobby.showCreate();
-  });
-
-  bindClick('lobby-back-btn', () => {
-    online.leave();
-    showTetrisMenu();
-  });
-
-  bindClick('show-join-btn', () => lobby.showJoin());
-  bindClick('join-back-btn', () => lobby.showCreate());
-
-  bindClick('create-room-btn', async () => {
-    unlockAudio();
-    lobby.clearError();
-    try {
-      await online.createRoom();
-    } catch (e) {
-      lobby.setError(e.message || '連線失敗');
-    }
-  });
-
-  bindClick('join-room-btn', async () => {
-    unlockAudio();
-    const code = lobby.getJoinCode();
-    if (code.length < 4) {
-      lobby.setError('請輸入房間代碼');
-      return;
-    }
-    lobby.clearError();
-    try {
-      await online.joinRoom(code);
-    } catch (e) {
-      lobby.setError(e.message || '連線失敗');
-    }
-  });
-
-  bindClick('ready-btn', () => {
-    unlockAudio();
-    online.ready();
-  });
-
-  bindClick('leave-room-btn', () => {
-    online.leave();
-    showTetrisMenu();
-  });
-
-  bindClick('copy-code-btn', async () => {
-    const code = document.getElementById('room-code')?.textContent;
-    if (!code) return;
-    try {
-      await navigator.clipboard.writeText(code);
-      lobby.setStatus('已複製房間代碼');
-    } catch {
-      lobby.setStatus(`房間代碼：${code}`);
-    }
-  });
 }
 
 function setupGlobalListeners() {
