@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>俄羅斯方塊 — Tetris</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app">
+    <!-- Main Menu -->
+    <div id="menu-screen" class="screen active">
+      <header class="title-block">
+        <h1 class="game-title">TETRIS</h1>
+        <p class="subtitle">俄羅斯方塊</p>
+      </header>
+      <nav class="menu-nav">
+        <button class="menu-btn" data-mode="solo">單人模式</button>
+        <button class="menu-btn" data-mode="versus-human">雙人 PK — 對戰玩家</button>
+        <button class="menu-btn" data-mode="versus-ai">雙人 PK — 對戰 AI</button>
+        <button class="menu-btn accent" id="online-menu-btn">線上對戰 — 與玩家連線</button>
+      </nav>
+      <div id="ai-difficulty" class="difficulty-panel hidden">
+        <p>AI 難度</p>
+        <div class="difficulty-btns">
+          <button class="diff-btn" data-diff="easy">簡單</button>
+          <button class="diff-btn active" data-diff="normal">普通</button>
+          <button class="diff-btn" data-diff="hard">困難</button>
+        </div>
+        <button id="start-ai-btn" class="menu-btn accent">開始對戰</button>
+      </div>
+      <section class="controls-hint">
+        <div class="hint-col">
+          <h3>玩家 1</h3>
+          <p>← → 移動 · ↑ 旋轉 · ↓ 軟降 · 空白 硬降 · C 保留</p>
+        </div>
+        <div class="hint-col">
+          <h3>玩家 2</h3>
+          <p>A D 移動 · W 旋轉 · S 軟降 · F 硬降 · E 保留 · Q 逆旋轉</p>
+        </div>
+      </section>
+    </div>
+
+    <!-- Online Lobby -->
+    <div id="lobby-screen" class="screen hidden">
+      <header class="title-block lobby-title">
+        <h2>線上對戰</h2>
+        <p class="subtitle">建立或加入房間</p>
+      </header>
+
+      <div class="lobby-server">
+        <label for="server-url">伺服器位址（預設本機）</label>
+        <input type="text" id="server-url" class="lobby-input" placeholder="留空＝自動（部署後不必填）" />
+      </div>
+
+      <p id="lobby-error" class="lobby-error hidden"></p>
+      <p id="lobby-status" class="lobby-status"></p>
+
+      <div id="lobby-create" class="lobby-panel">
+        <button id="create-room-btn" class="menu-btn accent">建立房間</button>
+        <button id="show-join-btn" class="menu-btn">加入房間</button>
+        <button id="lobby-back-btn" class="menu-btn">返回主選單</button>
+      </div>
+
+      <div id="lobby-join" class="lobby-panel hidden">
+        <label for="join-code">房間代碼（6 碼）</label>
+        <input type="text" id="join-code" class="lobby-input" maxlength="6" placeholder="例如 AB12CD" />
+        <button id="join-room-btn" class="menu-btn accent">加入</button>
+        <button id="join-back-btn" class="menu-btn">返回</button>
+      </div>
+
+      <div id="lobby-room" class="lobby-panel hidden">
+        <p class="room-label">房間代碼（分享給朋友）</p>
+        <p id="room-code" class="room-code">------</p>
+        <button id="copy-code-btn" class="menu-btn">複製代碼</button>
+        <button id="ready-btn" class="menu-btn accent">準備</button>
+        <button id="leave-room-btn" class="menu-btn">離開房間</button>
+      </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen">
+      <div class="game-header">
+        <button id="back-btn" class="icon-btn" title="返回主選單">← 選單</button>
+        <span id="mode-label" class="mode-label"></span>
+        <button id="pause-btn" class="icon-btn" title="暫停">⏸ 暫停</button>
+      </div>
+
+      <div id="solo-layout" class="game-layout hidden">
+        <aside class="side-panel">
+          <div class="stat-box">
+            <span class="stat-label">分數</span>
+            <span id="solo-score" class="stat-value">0</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label">等級</span>
+            <span id="solo-level" class="stat-value">1</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label">消除行</span>
+            <span id="solo-lines" class="stat-value">0</span>
+          </div>
+          <div class="preview-box">
+            <span class="stat-label">下一個</span>
+            <canvas id="solo-next" width="120" height="80"></canvas>
+          </div>
+          <div class="preview-box">
+            <span class="stat-label">保留</span>
+            <canvas id="solo-hold" width="120" height="80"></canvas>
+          </div>
+        </aside>
+        <div class="board-wrap">
+          <canvas id="solo-board" width="300" height="600"></canvas>
+        </div>
+      </div>
+
+      <div id="versus-layout" class="game-layout hidden">
+        <div class="player-block" data-player="0">
+          <div class="player-header p1">玩家 1</div>
+          <div class="versus-stats">
+            <span>分數: <strong id="p1-score">0</strong></span>
+            <span>行數: <strong id="p1-lines">0</strong></span>
+          </div>
+          <div class="versus-row">
+            <div class="mini-previews">
+              <div class="preview-box small">
+                <span class="stat-label">下一個</span>
+                <canvas class="next-canvas" data-player="0" width="80" height="56"></canvas>
+              </div>
+              <div class="preview-box small">
+                <span class="stat-label">保留</span>
+                <canvas class="hold-canvas" data-player="0" width="80" height="56"></canvas>
+              </div>
+            </div>
+            <canvas class="board-canvas" data-player="0" width="240" height="480"></canvas>
+          </div>
+        </div>
+        <div class="versus-center">
+          <div id="versus-timer" class="versus-timer hidden">3</div>
+          <div class="vs-badge">VS</div>
+        </div>
+        <div class="player-block" data-player="1">
+          <div class="player-header p2" id="p2-label">玩家 2</div>
+          <div class="versus-stats">
+            <span>分數: <strong id="p2-score">0</strong></span>
+            <span>行數: <strong id="p2-lines">0</strong></span>
+          </div>
+          <div class="versus-row">
+            <canvas class="board-canvas" data-player="1" width="240" height="480"></canvas>
+            <div class="mini-previews">
+              <div class="preview-box small">
+                <span class="stat-label">下一個</span>
+                <canvas class="next-canvas" data-player="1" width="80" height="56"></canvas>
+              </div>
+              <div class="preview-box small">
+                <span class="stat-label">保留</span>
+                <canvas class="hold-canvas" data-player="1" width="80" height="56"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overlays -->
+    <div id="pause-overlay" class="overlay hidden">
+      <div class="overlay-card">
+        <h2>已暫停</h2>
+        <button id="resume-btn" class="menu-btn">繼續遊戲</button>
+        <button id="quit-btn" class="menu-btn">返回主選單</button>
+      </div>
+    </div>
+
+    <div id="gameover-overlay" class="overlay hidden">
+      <div class="overlay-card">
+        <h2 id="gameover-title">遊戲結束</h2>
+        <p id="gameover-msg"></p>
+        <div id="gameover-stats" class="gameover-stats"></div>
+        <button id="restart-btn" class="menu-btn accent">再玩一次</button>
+        <button id="menu-btn" class="menu-btn">主選單</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
