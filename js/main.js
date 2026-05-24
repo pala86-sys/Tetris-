@@ -73,14 +73,33 @@ class UI {
   }
 }
 
-const ui = new UI();
-const game = new Game(ui);
-const lobby = new LobbyUI(ui.elements.lobbyScreen);
-const online = new OnlineController({ game, ui, lobby });
-online.init();
+let ui;
+let game;
+let lobby;
+let online;
 
 let pendingMode = null;
 let aiDifficulty = 'normal';
+
+function bindClick(id, handler) {
+  const el = document.getElementById(id);
+  if (!el) {
+    console.warn(`[Tetris] Missing element #${id}`);
+    return;
+  }
+  el.addEventListener('click', handler);
+}
+
+function initApp() {
+  ui = new UI();
+  game = new Game(ui);
+  lobby = new LobbyUI(ui.elements.lobbyScreen);
+  online = new OnlineController({ game, ui, lobby });
+  online.init();
+  bindMenuEvents();
+}
+
+function bindMenuEvents() {
 
 function localPlayerIndex() {
   return game.isOnline ? game.localPlayerIndex : 0;
@@ -151,6 +170,7 @@ function startRepeater(playerIndex, action, fire) {
 }
 
 function handleKeyDown(e) {
+  if (!game) return;
   // We implement our own repeat for left/right (DAS/ARR). Ignore native repeats.
   if (e.repeat) return;
 
@@ -200,6 +220,7 @@ function handleKeyDown(e) {
 }
 
 function handleKeyUp(e) {
+  if (!game) return;
   const p1Action = getAction(KEY_MAP.p1, e.code);
   const localIdx = localPlayerIndex();
   if (p1Action === 'left' || p1Action === 'right') {
@@ -222,6 +243,7 @@ function handleKeyUp(e) {
 }
 
 function stopAllRepeaters() {
+  if (!game) return;
   for (const key of repeaters.keys()) {
     const [p, action] = key.split(':');
     stopRepeater(Number(p), action);
@@ -233,124 +255,143 @@ function unlockAudio() {
   sounds.unlock();
 }
 
-document.querySelectorAll('.menu-btn[data-mode]').forEach((btn) => {
-  btn.addEventListener('click', () => {
+  document.querySelectorAll('.menu-btn[data-mode]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      unlockAudio();
+      ui.hideGameOver();
+      ui.hidePause();
+      game.stop();
+      const mode = btn.dataset.mode;
+      if (mode === 'versus-ai') {
+        document.getElementById('ai-difficulty').classList.remove('hidden');
+        pendingMode = MODES.VERSUS_AI;
+      } else {
+        document.getElementById('ai-difficulty').classList.add('hidden');
+        game.start(mode === 'solo' ? MODES.SOLO : MODES.VERSUS_HUMAN);
+      }
+    });
+  });
+
+  document.querySelectorAll('.diff-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.diff-btn').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      aiDifficulty = btn.dataset.diff;
+    });
+  });
+
+  bindClick('start-ai-btn', () => {
     unlockAudio();
-    const mode = btn.dataset.mode;
-    if (mode === 'versus-ai') {
-      document.getElementById('ai-difficulty').classList.remove('hidden');
-      pendingMode = MODES.VERSUS_AI;
-    } else {
-      document.getElementById('ai-difficulty').classList.add('hidden');
-      game.start(mode === 'solo' ? MODES.SOLO : MODES.VERSUS_HUMAN);
+    ui.hideGameOver();
+    game.start(MODES.VERSUS_AI, { difficulty: aiDifficulty });
+  });
+
+  bindClick('back-btn', () => {
+    stopAllRepeaters();
+    if (game.isOnline) online.leave();
+    game.stop();
+    ui.showMenu();
+  });
+
+  bindClick('pause-btn', () => game.pause());
+  bindClick('resume-btn', () => game.resume());
+  bindClick('quit-btn', () => {
+    stopAllRepeaters();
+    if (game.isOnline) online.leave();
+    game.stop();
+    ui.showMenu();
+  });
+
+  bindClick('restart-btn', () => game.restart());
+  bindClick('menu-btn', () => {
+    stopAllRepeaters();
+    if (game.isOnline) online.leave();
+    game.stop();
+    ui.showMenu();
+  });
+
+  bindClick('online-menu-btn', () => {
+    unlockAudio();
+    ui.hideGameOver();
+    ui.hidePause();
+    game.stop();
+    document.getElementById('ai-difficulty').classList.add('hidden');
+    ui.showScreen(ui.elements.lobbyScreen);
+    lobby.show();
+    lobby.showCreate();
+  });
+
+  bindClick('lobby-back-btn', () => {
+    online.leave();
+    ui.showMenu();
+  });
+
+  bindClick('show-join-btn', () => lobby.showJoin());
+  bindClick('join-back-btn', () => lobby.showCreate());
+
+  bindClick('create-room-btn', async () => {
+    unlockAudio();
+    lobby.clearError();
+    try {
+      await online.createRoom();
+    } catch (e) {
+      lobby.setError(e.message || '連線失敗');
     }
   });
-});
 
-document.querySelectorAll('.diff-btn').forEach((btn) => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.diff-btn').forEach((b) => b.classList.remove('active'));
-    btn.classList.add('active');
-    aiDifficulty = btn.dataset.diff;
+  bindClick('join-room-btn', async () => {
+    unlockAudio();
+    const code = lobby.getJoinCode();
+    if (code.length < 4) {
+      lobby.setError('請輸入房間代碼');
+      return;
+    }
+    lobby.clearError();
+    try {
+      await online.joinRoom(code);
+    } catch (e) {
+      lobby.setError(e.message || '連線失敗');
+    }
   });
-});
 
-document.getElementById('start-ai-btn').addEventListener('click', () => {
-  unlockAudio();
-  game.start(MODES.VERSUS_AI, { difficulty: aiDifficulty });
-});
+  bindClick('ready-btn', () => {
+    unlockAudio();
+    online.ready();
+  });
 
-document.addEventListener('keydown', unlockAudio, { once: true });
-document.addEventListener('click', unlockAudio, { once: true });
+  bindClick('leave-room-btn', () => {
+    online.leave();
+    ui.showMenu();
+  });
 
-document.getElementById('back-btn').addEventListener('click', () => {
-  stopAllRepeaters();
-  if (game.isOnline) online.leave();
-  game.stop();
-  ui.showMenu();
-});
+  bindClick('copy-code-btn', async () => {
+    const code = document.getElementById('room-code')?.textContent;
+    if (!code) return;
+    try {
+      await navigator.clipboard.writeText(code);
+      lobby.setStatus('已複製房間代碼');
+    } catch {
+      lobby.setStatus(`房間代碼：${code}`);
+    }
+  });
+}
 
-document.getElementById('pause-btn').addEventListener('click', () => game.pause());
-document.getElementById('resume-btn').addEventListener('click', () => game.resume());
-document.getElementById('quit-btn').addEventListener('click', () => {
-  stopAllRepeaters();
-  if (game.isOnline) online.leave();
-  game.stop();
-  ui.showMenu();
-});
+function setupGlobalListeners() {
+  document.addEventListener('keydown', unlockAudio, { once: true });
+  document.addEventListener('click', unlockAudio, { once: true });
+  document.addEventListener('keydown', handleKeyDown);
+  document.addEventListener('keyup', handleKeyUp);
+}
 
-document.getElementById('restart-btn').addEventListener('click', () => game.restart());
-document.getElementById('menu-btn').addEventListener('click', () => {
-  stopAllRepeaters();
-  if (game.isOnline) online.leave();
-  game.stop();
-  ui.showMenu();
-});
-
-document.getElementById('online-menu-btn').addEventListener('click', () => {
-  unlockAudio();
-  document.getElementById('ai-difficulty').classList.add('hidden');
-  ui.showScreen(ui.elements.lobbyScreen);
-  lobby.show();
-  lobby.showCreate();
-});
-
-document.getElementById('lobby-back-btn').addEventListener('click', () => {
-  online.leave();
-  ui.showMenu();
-});
-
-document.getElementById('show-join-btn').addEventListener('click', () => lobby.showJoin());
-document.getElementById('join-back-btn').addEventListener('click', () => lobby.showCreate());
-
-document.getElementById('create-room-btn').addEventListener('click', async () => {
-  unlockAudio();
-  lobby.clearError();
-  try {
-    await online.createRoom();
-  } catch (e) {
-    lobby.setError(e.message || '連線失敗');
-  }
-});
-
-document.getElementById('join-room-btn').addEventListener('click', async () => {
-  unlockAudio();
-  const code = lobby.getJoinCode();
-  if (code.length < 4) {
-    lobby.setError('請輸入房間代碼');
-    return;
-  }
-  lobby.clearError();
-  try {
-    await online.joinRoom(code);
-  } catch (e) {
-    lobby.setError(e.message || '連線失敗');
-  }
-});
-
-document.getElementById('ready-btn').addEventListener('click', () => {
-  unlockAudio();
-  online.ready();
-});
-
-document.getElementById('leave-room-btn').addEventListener('click', () => {
-  online.leave();
-  ui.showMenu();
-});
-
-document.getElementById('copy-code-btn').addEventListener('click', async () => {
-  const code = document.getElementById('room-code')?.textContent;
-  if (!code) return;
-  try {
-    await navigator.clipboard.writeText(code);
-    lobby.setStatus('已複製房間代碼');
-  } catch {
-    lobby.setStatus(`房間代碼：${code}`);
-  }
-});
-
-document.addEventListener('keydown', handleKeyDown);
-document.addEventListener('keyup', handleKeyUp);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    initApp();
+    setupGlobalListeners();
+  });
+} else {
+  initApp();
+  setupGlobalListeners();
+}
 
 // Prevent arrow keys from scrolling page
 window.addEventListener('keydown', (e) => {

@@ -44,6 +44,8 @@ export class Game {
   }
 
   start(mode, options = {}) {
+    this.ui.hideGameOver();
+    this.ui.hidePause();
     this.mode = mode;
     this.aiDifficulty = options.difficulty || 'normal';
     this.localPlayerIndex = options.localPlayerIndex ?? 0;

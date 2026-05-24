@@ -364,6 +364,11 @@ canvas {
   backdrop-filter: blur(4px);
 }
 
+.overlay.hidden {
+  display: none !important;
+  pointer-events: none !important;
+}
+
 .overlay-card {
   background: var(--bg-panel);
   border: 2px solid var(--border);
