@@ -3,6 +3,8 @@ import { Game, MODES } from './game.js';
 import { sounds } from './sounds.js';
 import { LobbyUI } from './lobby.js';
 import { OnlineController } from './online.js';
+import { Hub } from './hub.js';
+import { ChessApp } from './chess/chess-app.js';
 
 class UI {
   constructor() {
@@ -43,6 +45,12 @@ class UI {
   }
 
   showGameScreen(mode) {
+    document.getElementById('hub-screen')?.classList.add('hidden');
+    document.getElementById('menu-screen')?.classList.add('hidden');
+    document.getElementById('chess-menu-screen')?.classList.add('hidden');
+    document.getElementById('chess-game-screen')?.classList.add('hidden');
+    this.elements.lobbyScreen?.classList.add('hidden');
+    this.elements.gameScreen.classList.remove('hidden');
     this.showScreen(this.elements.gameScreen);
     const labels = {
       [MODES.SOLO]: '單人模式',
@@ -77,9 +85,34 @@ let ui;
 let game;
 let lobby;
 let online;
+let hub;
+let chessApp;
 
 let pendingMode = null;
 let aiDifficulty = 'normal';
+
+function showHub() {
+  game?.stop();
+  chessApp?.stop();
+  ui.hideGameOver();
+  ui.hidePause();
+  hub.show('hub');
+}
+
+function showTetrisMenu() {
+  game.stop();
+  chessApp.stop();
+  document.getElementById('ai-difficulty')?.classList.add('hidden');
+  ui.hideGameOver();
+  ui.hidePause();
+  hub.show('tetrisMenu');
+}
+
+function showChessMenu() {
+  game.stop();
+  chessApp.stop();
+  hub.show('chessMenu');
+}
 
 function bindClick(id, handler) {
   const el = document.getElementById(id);
@@ -94,12 +127,54 @@ function initApp() {
   ui = new UI();
   game = new Game(ui);
   lobby = new LobbyUI(ui.elements.lobbyScreen);
-  online = new OnlineController({ game, ui, lobby });
+  online = new OnlineController({ game, ui, lobby, onReturnMenu: showTetrisMenu });
   online.init();
+
+  hub = new Hub({
+    hub: document.getElementById('hub-screen'),
+    tetrisMenu: document.getElementById('menu-screen'),
+    chessMenu: document.getElementById('chess-menu-screen'),
+    chessGame: document.getElementById('chess-game-screen'),
+    game: document.getElementById('game-screen'),
+    lobby: document.getElementById('lobby-screen'),
+  });
+
+  chessApp = new ChessApp({
+    board: document.getElementById('chess-board'),
+    status: document.getElementById('chess-status'),
+    title: document.getElementById('chess-mode-label'),
+  });
+
   bindMenuEvents();
+  showHub();
 }
 
 function bindMenuEvents() {
+  bindClick('hub-tetris-btn', () => {
+    unlockAudio();
+    showTetrisMenu();
+  });
+
+  bindClick('hub-chess-btn', () => {
+    unlockAudio();
+    showChessMenu();
+  });
+
+  bindClick('tetris-hub-back', () => showHub());
+  bindClick('chess-hub-back', () => showHub());
+
+  document.querySelectorAll('[data-chess]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      unlockAudio();
+      const mode = btn.dataset.chess;
+      chessApp.start(mode);
+      hub.show('chessGame');
+    });
+  });
+
+  bindClick('chess-back-btn', () => showChessMenu());
+  bindClick('chess-reset-btn', () => chessApp.reset());
+}
 
 function localPlayerIndex() {
   return game.isOnline ? game.localPlayerIndex : 0;
@@ -290,7 +365,7 @@ function unlockAudio() {
     stopAllRepeaters();
     if (game.isOnline) online.leave();
     game.stop();
-    ui.showMenu();
+    showTetrisMenu();
   });
 
   bindClick('pause-btn', () => game.pause());
@@ -299,7 +374,7 @@ function unlockAudio() {
     stopAllRepeaters();
     if (game.isOnline) online.leave();
     game.stop();
-    ui.showMenu();
+    showTetrisMenu();
   });
 
   bindClick('restart-btn', () => game.restart());
@@ -307,7 +382,7 @@ function unlockAudio() {
     stopAllRepeaters();
     if (game.isOnline) online.leave();
     game.stop();
-    ui.showMenu();
+    showTetrisMenu();
   });
 
   bindClick('online-menu-btn', () => {
@@ -315,7 +390,12 @@ function unlockAudio() {
     ui.hideGameOver();
     ui.hidePause();
     game.stop();
+    chessApp.stop();
     document.getElementById('ai-difficulty').classList.add('hidden');
+    document.getElementById('hub-screen')?.classList.add('hidden');
+    document.getElementById('chess-menu-screen')?.classList.add('hidden');
+    document.getElementById('chess-game-screen')?.classList.add('hidden');
+    ui.elements.lobbyScreen.classList.remove('hidden');
     ui.showScreen(ui.elements.lobbyScreen);
     lobby.show();
     lobby.showCreate();
@@ -323,7 +403,7 @@ function unlockAudio() {
 
   bindClick('lobby-back-btn', () => {
     online.leave();
-    ui.showMenu();
+    showTetrisMenu();
   });
 
   bindClick('show-join-btn', () => lobby.showJoin());
@@ -361,7 +441,7 @@ function unlockAudio() {
 
   bindClick('leave-room-btn', () => {
     online.leave();
-    ui.showMenu();
+    showTetrisMenu();
   });
 
   bindClick('copy-code-btn', async () => {

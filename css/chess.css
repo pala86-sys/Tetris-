@@ -1,0 +1,159 @@
+.hub-title {
+  background: linear-gradient(135deg, var(--accent), #c9a227, var(--p2-color));
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.chess-title {
+  font-size: clamp(2.5rem, 8vw, 4rem) !important;
+  letter-spacing: 0.5em !important;
+  background: linear-gradient(135deg, #c9a227, #f4d03f, #e67e22) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+}
+
+.chess-title-block {
+  margin-bottom: 2rem;
+}
+
+.chess-hint {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin: 1rem 0;
+}
+
+.chess-status {
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--accent);
+  margin-bottom: 1rem;
+  min-height: 1.5rem;
+}
+
+.chess-status.winner {
+  color: #f4d03f;
+  font-weight: 700;
+}
+
+.chess-board-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.chess-board {
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+  background: linear-gradient(145deg, #5c3d1e, #3d2814);
+  border: 4px solid #8b6914;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.chess-board.xiangqi {
+  grid-template-columns: repeat(9, minmax(42px, 52px));
+  grid-template-rows: repeat(10, minmax(42px, 52px));
+}
+
+.chess-board.dark {
+  grid-template-columns: repeat(8, minmax(48px, 58px));
+  grid-template-rows: repeat(4, minmax(48px, 58px));
+}
+
+.chess-cell {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  background: #c9a86c;
+  font-size: clamp(1.1rem, 3vw, 1.5rem);
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s, transform 0.1s;
+  font-family: 'Noto Sans TC', serif;
+  color: #1a1a1a;
+  padding: 0;
+}
+
+.chess-board.xiangqi .chess-cell:nth-child(18n+1),
+.chess-board.xiangqi .chess-cell:nth-child(18n+3),
+.chess-board.xiangqi .chess-cell:nth-child(18n+5),
+.chess-board.xiangqi .chess-cell:nth-child(18n+7),
+.chess-board.xiangqi .chess-cell:nth-child(18n+9),
+.chess-board.xiangqi .chess-cell:nth-child(18n+11),
+.chess-board.xiangqi .chess-cell:nth-child(18n+13),
+.chess-board.xiangqi .chess-cell:nth-child(18n+15),
+.chess-board.xiangqi .chess-cell:nth-child(18n+17) {
+  background: #e8d4a8;
+}
+
+.chess-board.dark .chess-cell:nth-child(16n+1),
+.chess-board.dark .chess-cell:nth-child(16n+3),
+.chess-board.dark .chess-cell:nth-child(16n+5),
+.chess-board.dark .chess-cell:nth-child(16n+7),
+.chess-board.dark .chess-cell:nth-child(16n+9),
+.chess-board.dark .chess-cell:nth-child(16n+11),
+.chess-board.dark .chess-cell:nth-child(16n+13),
+.chess-board.dark .chess-cell:nth-child(16n+15) {
+  background: #e8d4a8;
+}
+
+.chess-cell.river-row {
+  border-top: 2px dashed rgba(30, 80, 120, 0.5);
+  border-bottom: 2px dashed rgba(30, 80, 120, 0.5);
+}
+
+.chess-cell.palace {
+  background: rgba(180, 60, 60, 0.15);
+}
+
+.chess-cell.has-piece.red {
+  color: #c0392b;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.chess-cell.has-piece.black {
+  color: #1a1a1a;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.chess-cell.hidden-piece {
+  background: linear-gradient(145deg, #4a3728, #2d2118) !important;
+  color: #d4af37 !important;
+  font-size: 1.4rem;
+}
+
+.chess-cell.selected {
+  outline: 3px solid var(--accent);
+  outline-offset: -2px;
+  z-index: 2;
+}
+
+.chess-cell.legal-target {
+  background: rgba(0, 229, 255, 0.35) !important;
+  box-shadow: inset 0 0 12px rgba(0, 229, 255, 0.5);
+}
+
+.chess-cell:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+@media (max-width: 520px) {
+  .chess-board.xiangqi {
+    grid-template-columns: repeat(9, minmax(32px, 38px));
+    grid-template-rows: repeat(10, minmax(32px, 38px));
+  }
+
+  .chess-board.dark {
+    grid-template-columns: repeat(8, minmax(36px, 42px));
+    grid-template-rows: repeat(4, minmax(36px, 42px));
+  }
+
+  .chess-cell {
+    font-size: 0.95rem;
+  }
+}

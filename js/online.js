@@ -2,10 +2,11 @@ import { net } from './net.js';
 import { MODES } from './game.js';
 
 export class OnlineController {
-  constructor({ game, ui, lobby }) {
+  constructor({ game, ui, lobby, onReturnMenu }) {
     this.game = game;
     this.ui = ui;
     this.lobby = lobby;
+    this.onReturnMenu = onReturnMenu;
     this.unsubs = [];
   }
 
@@ -80,7 +81,9 @@ export class OnlineController {
       },
       sendGameOver: (reason) => net.sendGameOver(reason),
       onRematch: () => {
-        this.ui.showMenu();
+        document.getElementById('ai-difficulty')?.classList.add('hidden');
+        if (this.onReturnMenu) this.onReturnMenu();
+        else this.ui.showMenu();
         this.lobby.show();
         this.lobby.reset();
       },

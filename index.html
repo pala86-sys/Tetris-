@@ -3,16 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>俄羅斯方塊 — Tetris</title>
+  <title>遊戲大廳</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/chess.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <div id="app">
-    <!-- Main Menu -->
-    <div id="menu-screen" class="screen active">
+    <!-- Game Hub -->
+    <div id="hub-screen" class="screen active">
+      <header class="title-block">
+        <h1 class="game-title hub-title">GAME HALL</h1>
+        <p class="subtitle">遊戲大廳</p>
+      </header>
+      <nav class="menu-nav">
+        <button class="menu-btn accent" id="hub-tetris-btn">俄羅斯方塊</button>
+        <button class="menu-btn accent" id="hub-chess-btn">象棋</button>
+      </nav>
+    </div>
+
+    <!-- Tetris Menu -->
+    <div id="menu-screen" class="screen hidden">
       <header class="title-block">
         <h1 class="game-title">TETRIS</h1>
         <p class="subtitle">俄羅斯方塊</p>
@@ -32,6 +45,7 @@
         </div>
         <button id="start-ai-btn" class="menu-btn accent">開始對戰</button>
       </div>
+      <button id="tetris-hub-back" class="menu-btn">返回遊戲大廳</button>
       <section class="controls-hint">
         <div class="hint-col">
           <h3>玩家 1</h3>
@@ -42,6 +56,32 @@
           <p>A D 移動 · W 旋轉 · S 軟降 · F 硬降 · E 保留 · Q 逆旋轉</p>
         </div>
       </section>
+    </div>
+
+    <!-- Chess Menu -->
+    <div id="chess-menu-screen" class="screen hidden">
+      <header class="title-block chess-title-block">
+        <h1 class="game-title chess-title">象棋</h1>
+        <p class="subtitle">選擇玩法</p>
+      </header>
+      <nav class="menu-nav">
+        <button class="menu-btn accent" data-chess="xiangqi">一般象棋</button>
+        <button class="menu-btn accent" data-chess="dark">暗棋</button>
+      </nav>
+      <p class="chess-hint">雙人同機對戰 · 紅方先行</p>
+      <button id="chess-hub-back" class="menu-btn">返回遊戲大廳</button>
+    </div>
+
+    <!-- Chess Game -->
+    <div id="chess-game-screen" class="screen hidden">
+      <div class="game-header">
+        <button id="chess-back-btn" class="icon-btn">← 象棋選單</button>
+        <span id="chess-mode-label" class="mode-label"></span>
+        <button id="chess-reset-btn" class="icon-btn">↺ 重開</button>
+      </div>
+      <p id="chess-status" class="chess-status"></p>
+      <div id="chess-board" class="chess-board-wrap"></div>
+      <p id="chess-controls-hint" class="chess-hint">點選棋子再點目標格移動</p>
     </div>
 
     <!-- Online Lobby -->
