@@ -1,5 +1,6 @@
 import { net } from './net.js';
 import { MODES } from './game.js';
+import { onlineGameType } from './online-session.js';
 
 export class OnlineController {
   constructor({ game, ui, lobby, onReturnMenu }) {
@@ -14,14 +15,26 @@ export class OnlineController {
     this.unsubs.push(
       net.on('created', (d) => this.onCreated(d)),
       net.on('joined', (d) => this.onJoined(d)),
-      net.on('opponentJoined', () => this.lobby.setStatus('對手已加入！按下「準備」開始')),
-      net.on('opponentReady', () => this.lobby.setStatus('對手已準備，請你也按下準備')),
+      net.on('opponentJoined', () => {
+        if (onlineGameType !== 'tetris') return;
+        this.lobby.setStatus('對手已加入！按下「準備」開始');
+      }),
+      net.on('opponentReady', () => {
+        if (onlineGameType !== 'tetris') return;
+        this.lobby.setStatus('對手已準備，請你也按下準備');
+      }),
       net.on('gameStart', (d) => this.onGameStart(d)),
       net.on('game', (d) => this.onGameMessage(d)),
       net.on('gameOver', (d) => this.game.handleOpponentGameOver(d.from)),
       net.on('opponentLeft', (d) => this.onOpponentLeft(d)),
-      net.on('error', (d) => this.lobby.setError(d.message)),
-      net.on('disconnected', () => this.lobby.setError('與伺服器斷線')),
+      net.on('error', (d) => {
+        if (onlineGameType !== 'tetris') return;
+        this.lobby.setError(d.message);
+      }),
+      net.on('disconnected', () => {
+        if (onlineGameType !== 'tetris') return;
+        this.lobby.setError('與伺服器斷線');
+      }),
     );
   }
 
@@ -51,6 +64,7 @@ export class OnlineController {
   }
 
   onCreated({ roomId, playerIndex }) {
+    if (onlineGameType !== 'tetris') return;
     net.roomId = roomId;
     net.playerIndex = playerIndex;
     this.lobby.showRoom(roomId, 'host');
@@ -58,6 +72,7 @@ export class OnlineController {
   }
 
   onJoined({ roomId, playerIndex }) {
+    if (onlineGameType !== 'tetris') return;
     net.roomId = roomId;
     net.playerIndex = playerIndex;
     this.lobby.showRoom(roomId, 'guest');
@@ -65,6 +80,7 @@ export class OnlineController {
   }
 
   onGameStart({ startAt }) {
+    if (onlineGameType !== 'tetris') return;
     this.lobby.hide();
     this.ui.hideGameOver();
 
@@ -97,7 +113,7 @@ export class OnlineController {
   }
 
   onGameMessage({ payload }) {
-    if (!this.game.running || !payload) return;
+    if (onlineGameType !== 'tetris' || !this.game.running || !payload) return;
 
     if (payload.kind === 'action') {
       this.game.applyRemoteAction(payload.action);
@@ -109,6 +125,7 @@ export class OnlineController {
   }
 
   onOpponentLeft({ message }) {
+    if (onlineGameType !== 'tetris') return;
     if (this.game.running) {
       this.game.endGame('對戰結束', message || '對手已離開');
     }

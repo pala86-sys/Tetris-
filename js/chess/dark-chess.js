@@ -9,6 +9,17 @@ function shuffle(arr) {
   return a;
 }
 
+function seededShuffle(arr, seed) {
+  const a = [...arr];
+  let s = (seed >>> 0) || 1;
+  for (let i = a.length - 1; i > 0; i--) {
+    s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
+    const j = s % (i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 function inBoard(r, c) {
   return r >= 0 && r < DARK_ROWS && c >= 0 && c < DARK_COLS;
 }
@@ -17,10 +28,13 @@ function cloneBoard(board) {
   return board.map((row) => row.map((cell) => (cell ? { ...cell } : null)));
 }
 
-function createInitialBoard() {
+function createInitialBoard(seed = null) {
   const b = Array.from({ length: DARK_ROWS }, () => Array(DARK_COLS).fill(null));
-  const redPieces = shuffle(DARK_SET.map((t) => ({ type: t, color: RED, revealed: false })));
-  const blackPieces = shuffle(DARK_SET.map((t) => ({ type: t, color: BLACK, revealed: false })));
+  const makeSide = (color) => DARK_SET.map((t) => ({ type: t, color, revealed: false }));
+  const redPieces = seed != null ? seededShuffle(makeSide(RED), seed) : shuffle(makeSide(RED));
+  const blackPieces = seed != null
+    ? seededShuffle(makeSide(BLACK), (seed + 7919) >>> 0)
+    : shuffle(makeSide(BLACK));
   let ri = 0;
   let bi = 0;
   for (let r = 0; r < 2; r++) {
@@ -148,7 +162,7 @@ function flipMoves(board, color) {
   return moves;
 }
 
-function allMoves(board, color) {
+export function allMoves(board, color) {
   const moves = [...flipMoves(board, color)];
   for (let r = 0; r < DARK_ROWS; r++) {
     for (let c = 0; c < DARK_COLS; c++) {
@@ -156,6 +170,41 @@ function allMoves(board, color) {
     }
   }
   return moves;
+}
+
+function finishDarkTurn(game, moverColor, captured) {
+  game.selected = null;
+  game.legal = [];
+  if (captured?.type === PIECE.K) {
+    game.winner = moverColor;
+    game.message = game.winner === RED ? '紅方獲勝！' : '黑方獲勝！';
+    return game;
+  }
+  game.turn = game.turn === RED ? BLACK : RED;
+  const enemy = game.turn;
+  if (countPieces(game.board, enemy) === 0) {
+    game.winner = game.turn === RED ? BLACK : RED;
+    game.message = game.winner === RED ? '紅方獲勝！' : '黑方獲勝！';
+    return game;
+  }
+  const moves = allMoves(game.board, game.turn);
+  if (moves.length === 0) {
+    game.winner = game.turn === RED ? BLACK : RED;
+    game.message = game.winner === RED ? '紅方獲勝！' : '黑方獲勝！';
+  } else {
+    game.message = game.turn === RED ? '輪到紅方' : '輪到黑方';
+  }
+  return game;
+}
+
+export function applyDarkMove(game, move) {
+  if (game.winner) return game;
+  const mover = game.board[move.fr][move.fc];
+  if (!mover) return game;
+  const moverColor = mover.color;
+  const { board, captured } = applyMove(game.board, move);
+  game.board = board;
+  return finishDarkTurn(game, moverColor, captured);
 }
 
 function countPieces(board, color) {
@@ -183,10 +232,11 @@ function applyMove(board, move) {
   return { board: next, captured };
 }
 
-export function createDarkChessGame() {
+export function createDarkChessGame(seed = null) {
   return {
     mode: 'dark',
-    board: createInitialBoard(),
+    board: createInitialBoard(seed),
+    seed,
     turn: RED,
     selected: null,
     legal: [],
@@ -202,31 +252,7 @@ export function selectDark(game, r, c) {
   if (game.selected) {
     const move = game.legal.find((m) => m.tr === r && m.tc === c);
     if (move) {
-      const mover = game.board[move.fr][move.fc];
-      const { board, captured } = applyMove(game.board, move);
-      game.board = board;
-      game.selected = null;
-      game.legal = [];
-      if (captured?.type === PIECE.K) {
-        game.winner = mover.color;
-        game.message = game.winner === RED ? '紅方獲勝！' : '黑方獲勝！';
-        return game;
-      }
-      game.turn = game.turn === RED ? BLACK : RED;
-      const enemy = game.turn;
-      if (countPieces(game.board, enemy) === 0) {
-        game.winner = game.turn === RED ? BLACK : RED;
-        game.message = game.winner === RED ? '紅方獲勝！' : '黑方獲勝！';
-        return game;
-      }
-      const moves = allMoves(game.board, game.turn);
-      if (moves.length === 0) {
-        game.winner = game.turn === RED ? BLACK : RED;
-        game.message = game.winner === RED ? '紅方獲勝！' : '黑方獲勝！';
-      } else {
-        game.message = game.turn === RED ? '輪到紅方' : '輪到黑方';
-      }
-      return game;
+      return applyDarkMove(game, move);
     }
     game.selected = null;
     game.legal = [];

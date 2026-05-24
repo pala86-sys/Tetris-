@@ -23,6 +23,20 @@
   margin: 1rem 0;
 }
 
+.chess-variant-title {
+  text-align: center;
+  font-size: 1.15rem;
+  color: var(--accent);
+  margin-bottom: 1rem;
+  letter-spacing: 0.15em;
+}
+
+#chess-mode-panel {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
 .chess-status {
   text-align: center;
   font-size: 1.1rem;

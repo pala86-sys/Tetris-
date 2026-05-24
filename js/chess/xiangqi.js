@@ -203,6 +203,29 @@ function legalMoves(board, color) {
   return all;
 }
 
+function finishXiangqiTurn(game, moverColor, captured) {
+  game.selected = null;
+  game.legal = [];
+  if (captured?.type === PIECE.K) {
+    game.winner = moverColor;
+    game.message = moverColor === RED ? '紅方獲勝！' : '黑方獲勝！';
+    return game;
+  }
+  game.turn = game.turn === RED ? BLACK : RED;
+  const moves = legalMoves(game.board, game.turn);
+  if (moves.length === 0) {
+    game.winner = game.turn === RED ? BLACK : RED;
+    game.message = game.winner === RED ? '紅方獲勝！' : '黑方獲勝！';
+  } else if (inCheck(game.board, game.turn)) {
+    game.message = game.turn === RED ? '紅方被將軍！' : '黑方被將軍！';
+  } else {
+    game.message = game.turn === RED ? '輪到紅方' : '輪到黑方';
+  }
+  return game;
+}
+
+export { legalMoves };
+
 export function createXiangqiGame() {
   return {
     mode: 'xiangqi',
@@ -213,6 +236,14 @@ export function createXiangqiGame() {
     winner: null,
     message: '紅方先行',
   };
+}
+
+export function applyXiangqiMove(game, move) {
+  if (game.winner) return game;
+  const mover = game.turn;
+  const { board, captured } = applyMove(game.board, move);
+  game.board = board;
+  return finishXiangqiTurn(game, mover, captured);
 }
 
 export function selectXiangqi(game, r, c) {
@@ -230,26 +261,10 @@ export function selectXiangqi(game, r, c) {
     game.legal = [];
     return selectXiangqi(game, r, c);
   }
+  const mover = game.turn;
   const { board, captured } = applyMove(game.board, move);
   game.board = board;
-  game.selected = null;
-  game.legal = [];
-  if (captured?.type === PIECE.K) {
-    game.winner = game.turn;
-    game.message = game.turn === RED ? '紅方獲勝！' : '黑方獲勝！';
-    return game;
-  }
-  game.turn = game.turn === RED ? BLACK : RED;
-  const moves = legalMoves(game.board, game.turn);
-  if (moves.length === 0) {
-    game.winner = game.turn === RED ? BLACK : RED;
-    game.message = game.winner === RED ? '紅方獲勝！' : '黑方獲勝！';
-  } else if (inCheck(game.board, game.turn)) {
-    game.message = game.turn === RED ? '紅方被將軍！' : '黑方被將軍！';
-  } else {
-    game.message = game.turn === RED ? '輪到紅方' : '輪到黑方';
-  }
-  return game;
+  return finishXiangqiTurn(game, mover, captured);
 }
 
 export function resetXiangqi(game) {

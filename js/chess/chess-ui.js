@@ -24,7 +24,11 @@ export function renderChessBoard(container, game) {
       );
       if (isPalace) cell.classList.add('palace');
 
-      const piece = game.board[r][c];
+      const raw = game.board[r][c];
+      const piece = raw && game.mode === 'dark' && game.viewColor
+        && !raw.revealed && raw.color !== game.viewColor
+        ? { ...raw, revealed: false }
+        : raw;
       if (piece) {
         const label = game.mode === 'dark'
           ? getDarkDisplayLabel(piece)
@@ -56,13 +60,19 @@ export function bindChessBoard(container, onCellClick) {
   };
 }
 
-export function updateChessStatus(el, game) {
+export function updateChessStatus(el, game, opts = {}) {
+  if (opts.waiting) return;
   const turnText = game.turn === RED ? '紅方' : '黑方';
+  let text = game.message || `輪到${turnText}`;
+  if (opts.localColor && !game.winner) {
+    const yours = game.turn === opts.localColor;
+    text = yours ? `輪到你（${turnText}）` : `等待對手（${turnText}）`;
+  }
   if (game.winner) {
     el.textContent = game.message;
     el.classList.add('winner');
   } else {
-    el.textContent = `${game.message || `輪到${turnText}`}`;
+    el.textContent = text;
     el.classList.remove('winner');
   }
 }
