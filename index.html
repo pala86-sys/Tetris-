@@ -7,6 +7,7 @@
   <!-- build: 2026-05-24 hub+chess -->
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/chess.css">
+  <link rel="stylesheet" href="css/gomoku.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
@@ -22,6 +23,7 @@
       <nav class="menu-nav">
         <button class="menu-btn accent" id="hub-tetris-btn">俄羅斯方塊</button>
         <button class="menu-btn accent" id="hub-chess-btn">象棋</button>
+        <button class="menu-btn accent" id="hub-gomoku-btn">五子棋</button>
       </nav>
     </div>
 
@@ -111,6 +113,45 @@
       <div id="chess-board" class="chess-board-wrap"></div>
       <p id="chess-controls-hint" class="chess-hint">點選棋子再點目標格移動</p>
       <!-- chess-controls-hint updated by JS -->
+    </div>
+
+    <!-- Gomoku Menu -->
+    <div id="gomoku-menu-screen" class="screen hidden">
+      <div class="gomoku-menu-inner">
+        <header class="title-block gomoku-title-block">
+          <h1 class="game-title cn-menu-title">五子棋</h1>
+          <p class="subtitle gomoku-subtitle">選擇模式</p>
+        </header>
+        <nav class="menu-nav gomoku-mode-nav">
+          <button class="menu-btn" data-gomoku-play="local">雙人同機</button>
+          <button class="menu-btn" data-gomoku-play="ai">單人對 AI</button>
+          <button class="menu-btn accent" data-gomoku-play="online">線上對戰</button>
+        </nav>
+        <div id="gomoku-ai-difficulty" class="difficulty-panel hidden">
+          <p>AI 難度</p>
+          <div class="difficulty-btns gomoku-diff-btns">
+            <button class="diff-btn gomoku-diff-btn" data-gomoku-diff="easy">簡單</button>
+            <button class="diff-btn gomoku-diff-btn active" data-gomoku-diff="normal">普通</button>
+            <button class="diff-btn gomoku-diff-btn" data-gomoku-diff="hard">困難</button>
+          </div>
+          <button id="gomoku-start-ai-btn" type="button" class="menu-btn accent">開始對戰</button>
+        </div>
+        <nav class="menu-nav gomoku-menu-footer">
+          <button id="gomoku-hub-back" type="button" class="menu-btn menu-btn--compact">返回遊戲大廳</button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Gomoku Game -->
+    <div id="gomoku-game-screen" class="screen hidden">
+      <div class="game-header">
+        <button id="gomoku-back-btn" class="icon-btn">← 五子棋選單</button>
+        <span id="gomoku-mode-label" class="mode-label"></span>
+        <button id="gomoku-reset-btn" class="icon-btn">↺ 重開</button>
+      </div>
+      <p id="gomoku-status" class="gomoku-status"></p>
+      <div id="gomoku-board" class="gomoku-board-wrap"></div>
+      <p id="gomoku-controls-hint" class="gomoku-hint">點擊交叉點落子</p>
     </div>
 
     <!-- Online Lobby -->
@@ -254,6 +295,6 @@
     </div>
   </div>
 
-  <script type="module" src="js/main.js?v=4"></script>
+  <script type="module" src="js/main.js?v=5"></script>
 </body>
 </html>

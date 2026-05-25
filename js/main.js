@@ -7,6 +7,8 @@ import { setOnlineGameType, onlineGameType } from './online-session.js';
 import { Hub } from './hub.js';
 import { ChessApp } from './chess/chess-app.js';
 import { ChessOnlineController } from './chess/chess-online.js';
+import { GomokuApp } from './gomoku/gomoku-app.js';
+import { GomokuOnlineController } from './gomoku/gomoku-online.js';
 
 class UI {
   constructor() {
@@ -51,6 +53,8 @@ class UI {
     document.getElementById('menu-screen')?.classList.add('hidden');
     document.getElementById('chess-menu-screen')?.classList.add('hidden');
     document.getElementById('chess-game-screen')?.classList.add('hidden');
+    document.getElementById('gomoku-menu-screen')?.classList.add('hidden');
+    document.getElementById('gomoku-game-screen')?.classList.add('hidden');
     this.elements.lobbyScreen?.classList.add('hidden');
     this.elements.gameScreen.classList.remove('hidden');
     this.showScreen(this.elements.gameScreen);
@@ -90,14 +94,25 @@ let online;
 let hub;
 let chessApp;
 let chessOnline;
+let gomokuApp;
+let gomokuOnline;
 
 let pendingMode = null;
 let aiDifficulty = 'normal';
 let pendingChessVariant = null;
 let chessAiDifficulty = 'normal';
+let gomokuAiDifficulty = 'normal';
 
 function activeOnline() {
-  return onlineGameType === 'chess' ? chessOnline : online;
+  if (onlineGameType === 'chess') return chessOnline;
+  if (onlineGameType === 'gomoku') return gomokuOnline;
+  return online;
+}
+
+function returnFromLobby() {
+  if (onlineGameType === 'chess') showChessMenu();
+  else if (onlineGameType === 'gomoku') showGomokuMenu();
+  else showTetrisMenu();
 }
 
 function resetChessMenuPanels() {
@@ -135,6 +150,9 @@ function openTetrisLobby() {
 function showHub() {
   game?.stop();
   chessApp?.stop();
+  gomokuApp?.stop();
+  gomokuOnline?.leave();
+  chessOnline?.leave();
   ui.hideGameOver();
   ui.hidePause();
   hub.show('hub');
@@ -143,7 +161,9 @@ function showHub() {
 function showTetrisMenu() {
   game?.stop();
   chessApp?.stop();
+  gomokuApp?.stop();
   document.getElementById('ai-difficulty')?.classList.add('hidden');
+  document.getElementById('gomoku-ai-difficulty')?.classList.add('hidden');
   ui?.hideGameOver();
   ui?.hidePause();
   hub?.show('tetrisMenu');
@@ -152,10 +172,30 @@ function showTetrisMenu() {
 function showChessMenu() {
   game?.stop();
   chessApp?.stop();
+  gomokuApp?.stop();
   chessOnline?.leave();
   pendingChessVariant = null;
   resetChessMenuPanels();
   hub?.show('chessMenu');
+}
+
+function showGomokuMenu() {
+  game?.stop();
+  chessApp?.stop();
+  gomokuApp?.stop();
+  gomokuOnline?.leave();
+  document.getElementById('gomoku-ai-difficulty')?.classList.add('hidden');
+  hub?.show('gomokuMenu');
+}
+
+function startGomoku(playMode) {
+  if (!gomokuApp) return;
+  gomokuApp.start({
+    playMode,
+    aiDifficulty: gomokuAiDifficulty,
+  });
+  hub?.show('gomokuGame');
+  document.getElementById('gomoku-ai-difficulty')?.classList.add('hidden');
 }
 
 function bindClick(id, handler) {
@@ -180,6 +220,8 @@ function initApp() {
       tetrisMenu: document.getElementById('menu-screen'),
       chessMenu: document.getElementById('chess-menu-screen'),
       chessGame: document.getElementById('chess-game-screen'),
+      gomokuMenu: document.getElementById('gomoku-menu-screen'),
+      gomokuGame: document.getElementById('gomoku-game-screen'),
       game: document.getElementById('game-screen'),
       lobby: document.getElementById('lobby-screen'),
     });
@@ -208,6 +250,27 @@ function initApp() {
       chessOnline = { leave() {}, openLobby() {}, createRoom: async () => {}, joinRoom: async () => {}, ready() {} };
     }
 
+    try {
+      gomokuApp = new GomokuApp({
+        board: document.getElementById('gomoku-board'),
+        status: document.getElementById('gomoku-status'),
+        title: document.getElementById('gomoku-mode-label'),
+        hint: document.getElementById('gomoku-controls-hint'),
+      });
+      gomokuOnline = new GomokuOnlineController({
+        gomokuApp,
+        ui,
+        lobby,
+        hub,
+        onReturnMenu: showGomokuMenu,
+      });
+      gomokuOnline.init();
+    } catch (err) {
+      console.error('[Game Hall] Gomoku module failed to load', err);
+      gomokuApp = { stop() {}, start() {}, reset() {} };
+      gomokuOnline = { leave() {}, openLobby() {}, createRoom: async () => {}, joinRoom: async () => {}, ready() {} };
+    }
+
     showHub();
   } catch (err) {
     console.error('[Game Hall] init failed', err);
@@ -226,8 +289,14 @@ function bindMenuEvents() {
     showChessMenu();
   });
 
+  bindClick('hub-gomoku-btn', () => {
+    unlockAudio();
+    showGomokuMenu();
+  });
+
   bindClick('tetris-hub-back', () => showHub());
   bindClick('chess-hub-back', () => showHub());
+  bindClick('gomoku-hub-back', () => showHub());
 
   document.querySelectorAll('[data-chess-variant]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -273,6 +342,42 @@ function bindMenuEvents() {
     showChessMenu();
   });
   bindClick('chess-reset-btn', () => chessApp?.reset());
+
+  document.querySelectorAll('[data-gomoku-play]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      unlockAudio();
+      const play = btn.dataset.gomokuPlay;
+      if (play === 'ai') {
+        document.getElementById('gomoku-ai-difficulty')?.classList.remove('hidden');
+        return;
+      }
+      if (play === 'online') {
+        setOnlineGameType('gomoku');
+        gomokuOnline?.openLobby();
+        return;
+      }
+      startGomoku('local');
+    });
+  });
+
+  document.querySelectorAll('.gomoku-diff-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.gomoku-diff-btn').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      gomokuAiDifficulty = btn.dataset.gomokuDiff;
+    });
+  });
+
+  bindClick('gomoku-start-ai-btn', () => {
+    unlockAudio();
+    startGomoku('ai');
+  });
+
+  bindClick('gomoku-back-btn', () => {
+    gomokuOnline?.leave();
+    showGomokuMenu();
+  });
+  bindClick('gomoku-reset-btn', () => gomokuApp?.reset());
 
   document.querySelectorAll('.menu-btn[data-mode]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -335,11 +440,15 @@ function bindMenuEvents() {
     ui.hidePause();
     game.stop();
     chessApp?.stop();
-    document.getElementById('ai-difficulty').classList.add('hidden');
+    gomokuApp?.stop();
+    document.getElementById('ai-difficulty')?.classList.add('hidden');
     document.getElementById('chess-ai-difficulty')?.classList.add('hidden');
+    document.getElementById('gomoku-ai-difficulty')?.classList.add('hidden');
     document.getElementById('hub-screen')?.classList.add('hidden');
     document.getElementById('chess-menu-screen')?.classList.add('hidden');
     document.getElementById('chess-game-screen')?.classList.add('hidden');
+    document.getElementById('gomoku-menu-screen')?.classList.add('hidden');
+    document.getElementById('gomoku-game-screen')?.classList.add('hidden');
     openTetrisLobby();
     ui.elements.lobbyScreen.classList.remove('hidden');
     ui.showScreen(ui.elements.lobbyScreen);
@@ -348,10 +457,8 @@ function bindMenuEvents() {
   });
 
   bindClick('lobby-back-btn', () => {
-    const wasChess = onlineGameType === 'chess';
     activeOnline()?.leave();
-    if (wasChess) showChessMenu();
-    else showTetrisMenu();
+    returnFromLobby();
   });
 
   bindClick('show-join-btn', () => lobby.showJoin());
@@ -388,10 +495,8 @@ function bindMenuEvents() {
   });
 
   bindClick('leave-room-btn', () => {
-    const wasChess = onlineGameType === 'chess';
     activeOnline()?.leave();
-    if (wasChess) showChessMenu();
-    else showTetrisMenu();
+    returnFromLobby();
   });
 
   bindClick('copy-code-btn', async () => {
@@ -425,6 +530,12 @@ function setupHubDelegation() {
       e.preventDefault();
       unlockAudio();
       showChessMenu();
+      return;
+    }
+    if (btn.id === 'hub-gomoku-btn') {
+      e.preventDefault();
+      unlockAudio();
+      showGomokuMenu();
     }
   });
 }
