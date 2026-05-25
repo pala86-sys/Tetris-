@@ -95,13 +95,6 @@ body {
   text-align: center;
 }
 
-.tetris-en-title {
-  font-size: clamp(2rem, 7vw, 3.5rem) !important;
-  letter-spacing: 0.25em !important;
-  text-indent: 0.25em;
-  margin-bottom: 0 !important;
-}
-
 #menu-screen .menu-nav {
   width: 100%;
   align-items: center;
