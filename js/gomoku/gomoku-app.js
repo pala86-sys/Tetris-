@@ -3,6 +3,7 @@ import { createGomokuGame, placeStone, resetGomoku, opponent } from './gomoku.js
 import { renderGomokuBoard, bindGomokuBoard, updateGomokuStatus } from './gomoku-ui.js';
 import { serializeGomokuState, deserializeGomokuState } from './gomoku-serialize.js';
 import { pickAiMove, getAiThinkDelay } from './gomoku-ai.js';
+import { playMoveSoundIfChanged } from '../board-sounds.js';
 
 export class GomokuApp {
   constructor(elements) {
@@ -85,8 +86,10 @@ export class GomokuApp {
 
   onCell(r, c) {
     if (!this.canInteract()) return;
+    const boardBefore = this.game.board.map((row) => [...row]);
     const turnBefore = this.game.turn;
     this.game = placeStone(this.game, r, c);
+    playMoveSoundIfChanged(boardBefore, this.game);
     this.afterPly(turnBefore);
   }
 
@@ -109,7 +112,9 @@ export class GomokuApp {
 
   applyRemoteState(state) {
     if (!state) return;
+    const boardBefore = this.game?.board?.map((row) => [...row]);
     this.game = deserializeGomokuState(state);
+    if (boardBefore) playMoveSoundIfChanged(boardBefore, this.game);
     this.render();
     if (this.game.winner) {
       this.el.status.textContent = this.game.message;
@@ -126,8 +131,10 @@ export class GomokuApp {
       if (!this.game || this.game.winner || this.game.turn !== aiColor) return;
       const move = pickAiMove(this.game, aiColor, this.aiDifficulty);
       if (!move) return;
+      const boardBefore = this.game.board.map((row) => [...row]);
       const turnBefore = this.game.turn;
       this.game = placeStone(this.game, move.r, move.c);
+      playMoveSoundIfChanged(boardBefore, this.game);
       this.afterPly(turnBefore);
     }, delay);
   }

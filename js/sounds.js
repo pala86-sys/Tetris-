@@ -96,6 +96,67 @@ class SoundManager {
     osc.start(startTime);
     osc.stop(startTime + duration + 0.05);
   }
+
+  /** 象棋／五子棋／黑白棋：落子 */
+  playBoardPlace() {
+    if (!this.enabled) return;
+    try {
+      const ctx = this.ensureContext();
+      if (ctx.state === 'suspended') ctx.resume();
+      const t = ctx.currentTime + 0.01;
+      this.playTone(ctx, 520, 0.05, t, 0.09, 'sine');
+      this.playTone(ctx, 780, 0.04, t + 0.03, 0.06, 'triangle');
+    } catch {
+      // 略過
+    }
+  }
+
+  /** 吃子、翻棋、黑白棋翻轉等多格變化 */
+  playBoardCapture(flips = 1) {
+    if (!this.enabled) return;
+    try {
+      const ctx = this.ensureContext();
+      if (ctx.state === 'suspended') ctx.resume();
+      const t = ctx.currentTime + 0.01;
+      const n = Math.min(Math.max(flips, 1), 8);
+      this.playTone(ctx, 220, 0.07, t, 0.11, 'triangle');
+      this.playTone(ctx, 165 + n * 12, 0.09, t + 0.05, 0.1, 'sine');
+      if (n >= 3) {
+        this.playTone(ctx, 330, 0.06, t + 0.1, 0.07, 'triangle');
+      }
+    } catch {
+      // 略過
+    }
+  }
+
+  /** 暗棋翻開棋子 */
+  playBoardFlip() {
+    if (!this.enabled) return;
+    try {
+      const ctx = this.ensureContext();
+      if (ctx.state === 'suspended') ctx.resume();
+      const t = ctx.currentTime + 0.01;
+      this.playTone(ctx, 660, 0.06, t, 0.08, 'sine');
+      this.playTone(ctx, 880, 0.04, t + 0.04, 0.05, 'triangle');
+    } catch {
+      // 略過
+    }
+  }
+}
+
+/** 比對棋盤是否有變化（用於判斷是否成功落子） */
+export function boardChanged(before, after) {
+  if (!before || !after || before.length !== after.length) return true;
+  for (let r = 0; r < before.length; r++) {
+    for (let c = 0; c < before[r].length; c++) {
+      const a = before[r][c];
+      const b = after[r][c];
+      if (a === b) continue;
+      if (!a || !b) return true;
+      if (JSON.stringify(a) !== JSON.stringify(b)) return true;
+    }
+  }
+  return false;
 }
 
 export const sounds = new SoundManager();

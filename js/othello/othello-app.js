@@ -3,6 +3,7 @@ import { createOthelloGame, placeDisc, resetOthello, opponent } from './othello.
 import { renderOthelloBoard, bindOthelloBoard, updateOthelloStatus } from './othello-ui.js';
 import { serializeOthelloState, deserializeOthelloState } from './othello-serialize.js';
 import { pickAiMove, getAiThinkDelay } from './othello-ai.js';
+import { playMoveSoundIfChanged } from '../board-sounds.js';
 
 export class OthelloApp {
   constructor(elements) {
@@ -85,8 +86,10 @@ export class OthelloApp {
 
   onCell(r, c) {
     if (!this.canInteract()) return;
+    const boardBefore = this.game.board.map((row) => [...row]);
     const turnBefore = this.game.turn;
     this.game = placeDisc(this.game, r, c);
+    playMoveSoundIfChanged(boardBefore, this.game);
     this.afterPly(turnBefore);
   }
 
@@ -109,7 +112,9 @@ export class OthelloApp {
 
   applyRemoteState(state) {
     if (!state) return;
+    const boardBefore = this.game?.board?.map((row) => [...row]);
     this.game = deserializeOthelloState(state);
+    if (boardBefore) playMoveSoundIfChanged(boardBefore, this.game);
     this.render();
     if (this.game.winner) {
       this.el.status.classList.add('winner');
@@ -125,8 +130,10 @@ export class OthelloApp {
       if (!this.game || this.game.winner || this.game.turn !== aiColor) return;
       const move = pickAiMove(this.game, aiColor, this.aiDifficulty);
       if (!move) return;
+      const boardBefore = this.game.board.map((row) => [...row]);
       const turnBefore = this.game.turn;
       this.game = placeDisc(this.game, move.r, move.c);
+      playMoveSoundIfChanged(boardBefore, this.game);
       this.afterPly(turnBefore);
     }, delay);
   }

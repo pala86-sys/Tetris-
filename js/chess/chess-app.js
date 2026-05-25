@@ -4,6 +4,7 @@ import { createDarkChessGame, selectDark, resetDark, applyDarkMove } from './dar
 import { renderChessBoard, bindChessBoard, updateChessStatus } from './chess-ui.js';
 import { serializeChessState, deserializeChessState } from './chess-serialize.js';
 import { pickAiMove, getAiThinkDelay, opponentColor } from './chess-ai.js';
+import { playMoveSoundIfChanged } from '../board-sounds.js';
 
 export class ChessApp {
   constructor(elements) {
@@ -137,12 +138,14 @@ export class ChessApp {
   onCell(r, c) {
     if (!this.canInteract()) return;
 
+    const boardBefore = this.game.board.map((row) => row.map((cell) => (cell ? { ...cell } : null)));
     const turnBefore = this.game.turn;
     if (this.variant === 'xiangqi') {
       this.game = selectXiangqi(this.game, r, c);
     } else {
       this.game = selectDark(this.game, r, c);
     }
+    playMoveSoundIfChanged(boardBefore, this.game);
     this.afterPly(turnBefore);
   }
 
@@ -168,8 +171,10 @@ export class ChessApp {
 
   applyRemoteState(state) {
     if (!state) return;
+    const boardBefore = this.game?.board?.map((row) => row.map((cell) => (cell ? { ...cell } : null)));
     this.game = deserializeChessState(state);
     this.variant = this.game.mode;
+    if (boardBefore) playMoveSoundIfChanged(boardBefore, this.game);
     this.setViewColor();
     this.render();
     if (this.game.winner) {
@@ -203,12 +208,14 @@ export class ChessApp {
       const move = pickAiMove(this.game, aiColor, this.aiDifficulty);
       if (!move) return;
 
+      const boardBefore = this.game.board.map((row) => row.map((cell) => (cell ? { ...cell } : null)));
       const turnBefore = this.game.turn;
       if (this.variant === 'xiangqi') {
         this.game = applyXiangqiMove(this.game, move);
       } else {
         this.game = applyDarkMove(this.game, move);
       }
+      playMoveSoundIfChanged(boardBefore, this.game);
       this.afterPly(turnBefore);
     }, delay);
   }
