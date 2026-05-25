@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="css/chess.css">
   <link rel="stylesheet" href="css/gomoku.css">
   <link rel="stylesheet" href="css/othello.css">
+  <link rel="stylesheet" href="css/rules.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
@@ -41,6 +42,9 @@
           <button class="menu-btn" data-mode="versus-human">雙人 PK — 對戰玩家</button>
           <button class="menu-btn" data-mode="versus-ai">雙人 PK — 對戰 AI</button>
           <button class="menu-btn accent" id="online-menu-btn">線上對戰 — 與玩家連線</button>
+        </nav>
+        <nav class="menu-nav menu-nav--rules">
+          <button type="button" class="menu-btn" data-rules="tetris">遊戲規則</button>
         </nav>
         <div id="ai-difficulty" class="difficulty-panel hidden">
           <p>AI 難度</p>
@@ -79,6 +83,10 @@
             <button class="menu-btn accent" data-chess-variant="xiangqi">一般象棋</button>
             <button class="menu-btn accent" data-chess-variant="dark">暗棋</button>
           </nav>
+          <nav class="menu-nav menu-nav--rules">
+            <button type="button" class="menu-btn" data-rules="xiangqi">一般象棋規則</button>
+            <button type="button" class="menu-btn" data-rules="dark">暗棋規則</button>
+          </nav>
         </div>
         <div id="chess-mode-panel" class="hidden">
           <p id="chess-variant-title" class="chess-variant-title"></p>
@@ -97,6 +105,9 @@
             </div>
             <button id="chess-start-ai-btn" type="button" class="menu-btn accent">開始對戰</button>
           </div>
+          <nav class="menu-nav menu-nav--rules">
+            <button type="button" class="menu-btn" id="chess-rules-btn" data-rules="xiangqi">遊戲規則</button>
+          </nav>
         </div>
         <nav class="menu-nav chess-menu-footer">
           <button id="chess-hub-back" type="button" class="menu-btn menu-btn--compact">返回遊戲大廳</button>
@@ -109,7 +120,10 @@
       <div class="game-header">
         <button id="chess-back-btn" class="icon-btn">← 象棋選單</button>
         <span id="chess-mode-label" class="mode-label"></span>
-        <button id="chess-reset-btn" class="icon-btn">↺ 重開</button>
+        <div class="game-header-actions">
+          <button type="button" id="chess-ingame-rules" class="icon-btn rules-icon-btn" data-rules="xiangqi" title="遊戲規則">?</button>
+          <button id="chess-reset-btn" class="icon-btn">↺ 重開</button>
+        </div>
       </div>
       <p id="chess-status" class="chess-status"></p>
       <div id="chess-board" class="chess-board-wrap"></div>
@@ -128,6 +142,9 @@
           <button class="menu-btn" data-gomoku-play="local">雙人同機</button>
           <button class="menu-btn" data-gomoku-play="ai">單人對 AI</button>
           <button class="menu-btn accent" data-gomoku-play="online">線上對戰</button>
+        </nav>
+        <nav class="menu-nav menu-nav--rules">
+          <button type="button" class="menu-btn" data-rules="gomoku">遊戲規則</button>
         </nav>
         <div id="gomoku-ai-difficulty" class="difficulty-panel hidden">
           <p>AI 難度</p>
@@ -149,7 +166,10 @@
       <div class="game-header">
         <button id="gomoku-back-btn" class="icon-btn">← 五子棋選單</button>
         <span id="gomoku-mode-label" class="mode-label"></span>
-        <button id="gomoku-reset-btn" class="icon-btn">↺ 重開</button>
+        <div class="game-header-actions">
+          <button type="button" class="icon-btn rules-icon-btn" data-rules="gomoku" title="遊戲規則">?</button>
+          <button id="gomoku-reset-btn" class="icon-btn">↺ 重開</button>
+        </div>
       </div>
       <p id="gomoku-status" class="gomoku-status"></p>
       <div id="gomoku-board" class="gomoku-board-wrap"></div>
@@ -167,6 +187,9 @@
           <button class="menu-btn" data-othello-play="local">雙人同機</button>
           <button class="menu-btn" data-othello-play="ai">單人對 AI</button>
           <button class="menu-btn accent" data-othello-play="online">線上對戰</button>
+        </nav>
+        <nav class="menu-nav menu-nav--rules">
+          <button type="button" class="menu-btn" data-rules="othello">遊戲規則</button>
         </nav>
         <div id="othello-ai-difficulty" class="difficulty-panel hidden">
           <p>AI 難度</p>
@@ -188,7 +211,10 @@
       <div class="game-header">
         <button id="othello-back-btn" class="icon-btn">← 黑白棋選單</button>
         <span id="othello-mode-label" class="mode-label"></span>
-        <button id="othello-reset-btn" class="icon-btn">↺ 重開</button>
+        <div class="game-header-actions">
+          <button type="button" class="icon-btn rules-icon-btn" data-rules="othello" title="遊戲規則">?</button>
+          <button id="othello-reset-btn" class="icon-btn">↺ 重開</button>
+        </div>
       </div>
       <p id="othello-status" class="othello-status"></p>
       <div id="othello-board" class="othello-board-wrap"></div>
@@ -237,7 +263,10 @@
       <div class="game-header">
         <button id="back-btn" class="icon-btn" title="返回主選單">← 選單</button>
         <span id="mode-label" class="mode-label"></span>
-        <button id="pause-btn" class="icon-btn" title="暫停">⏸ 暫停</button>
+        <div class="game-header-actions">
+          <button type="button" class="icon-btn rules-icon-btn" data-rules="tetris" title="遊戲規則">?</button>
+          <button id="pause-btn" class="icon-btn" title="暫停">⏸ 暫停</button>
+        </div>
       </div>
 
       <div id="solo-layout" class="game-layout hidden">
@@ -334,8 +363,16 @@
         <button id="menu-btn" class="menu-btn">主選單</button>
       </div>
     </div>
+
+    <div id="rules-overlay" class="overlay rules-overlay hidden">
+      <div class="rules-card overlay-card">
+        <h2 id="rules-title">遊戲規則</h2>
+        <div id="rules-body" class="rules-body"></div>
+        <button type="button" id="rules-close-btn" class="menu-btn accent">關閉</button>
+      </div>
+    </div>
   </div>
 
-  <script type="module" src="js/main.js?v=7"></script>
+  <script type="module" src="js/main.js?v=8"></script>
 </body>
 </html>

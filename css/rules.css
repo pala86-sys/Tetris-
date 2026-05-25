@@ -1,0 +1,92 @@
+.rules-overlay {
+  z-index: 150;
+  padding: 1rem;
+}
+
+.rules-card {
+  text-align: left;
+  max-width: 520px;
+  width: 100%;
+  max-height: min(85vh, 640px);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 1.75rem;
+}
+
+.rules-card h2 {
+  text-align: center;
+  margin-bottom: 1rem;
+  flex-shrink: 0;
+}
+
+.rules-body {
+  overflow-y: auto;
+  flex: 1;
+  text-align: left;
+  color: var(--text);
+  font-size: 0.92rem;
+  line-height: 1.65;
+  padding-right: 0.25rem;
+}
+
+.rules-body section {
+  margin-bottom: 1.1rem;
+}
+
+.rules-body section:last-child {
+  margin-bottom: 0;
+}
+
+.rules-body h3 {
+  font-size: 0.95rem;
+  color: var(--accent);
+  margin-bottom: 0.4rem;
+  font-weight: 700;
+}
+
+.rules-body p {
+  color: var(--text-dim);
+  margin-bottom: 0.35rem;
+}
+
+.rules-body ul {
+  margin: 0.25rem 0 0 1.1rem;
+  color: var(--text-dim);
+}
+
+.rules-body li {
+  margin-bottom: 0.35rem;
+}
+
+.rules-body strong {
+  color: var(--text);
+}
+
+.rules-card .menu-btn {
+  margin-top: 1.25rem;
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 280px;
+  align-self: center;
+}
+
+.menu-nav--rules {
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
+.menu-nav--rules .menu-btn {
+  max-width: 280px;
+}
+
+.game-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rules-icon-btn {
+  min-width: 2.5rem;
+  font-weight: 700;
+  color: var(--accent);
+}

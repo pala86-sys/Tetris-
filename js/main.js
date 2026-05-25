@@ -11,6 +11,7 @@ import { GomokuApp } from './gomoku/gomoku-app.js';
 import { GomokuOnlineController } from './gomoku/gomoku-online.js';
 import { OthelloApp } from './othello/othello-app.js';
 import { OthelloOnlineController } from './othello/othello-online.js';
+import { initGameRules, updateChessRulesButton } from './game-rules.js';
 
 class UI {
   constructor() {
@@ -137,6 +138,7 @@ function showChessModePanel(variant) {
   document.getElementById('chess-variant-panel')?.classList.add('hidden');
   document.getElementById('chess-mode-panel')?.classList.remove('hidden');
   document.getElementById('chess-ai-difficulty')?.classList.add('hidden');
+  updateChessRulesButton(variant);
 }
 
 function startChessLocal(playMode) {
@@ -265,6 +267,7 @@ function initApp() {
 
     bindMenuEvents();
     setupHubDelegation();
+    initGameRules();
 
     try {
       chessApp = new ChessApp({

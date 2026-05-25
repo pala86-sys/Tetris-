@@ -109,6 +109,8 @@ export class ChessApp {
       ? (this.localColor === RED ? '你是紅方' : '你是黑方')
       : (this.isAi ? '你是紅方' : '');
     this.el.title.textContent = `${names[this.variant] || ''} · ${modeNames[this.playMode] || ''}${side ? ` · ${side}` : ''}`;
+    const rulesBtn = document.getElementById('chess-ingame-rules');
+    if (rulesBtn && this.variant) rulesBtn.dataset.rules = this.variant;
   }
 
   updateHint() {
