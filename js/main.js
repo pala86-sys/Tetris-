@@ -9,6 +9,8 @@ import { ChessApp } from './chess/chess-app.js';
 import { ChessOnlineController } from './chess/chess-online.js';
 import { GomokuApp } from './gomoku/gomoku-app.js';
 import { GomokuOnlineController } from './gomoku/gomoku-online.js';
+import { OthelloApp } from './othello/othello-app.js';
+import { OthelloOnlineController } from './othello/othello-online.js';
 
 class UI {
   constructor() {
@@ -55,6 +57,8 @@ class UI {
     document.getElementById('chess-game-screen')?.classList.add('hidden');
     document.getElementById('gomoku-menu-screen')?.classList.add('hidden');
     document.getElementById('gomoku-game-screen')?.classList.add('hidden');
+    document.getElementById('othello-menu-screen')?.classList.add('hidden');
+    document.getElementById('othello-game-screen')?.classList.add('hidden');
     this.elements.lobbyScreen?.classList.add('hidden');
     this.elements.gameScreen.classList.remove('hidden');
     this.showScreen(this.elements.gameScreen);
@@ -96,22 +100,27 @@ let chessApp;
 let chessOnline;
 let gomokuApp;
 let gomokuOnline;
+let othelloApp;
+let othelloOnline;
 
 let pendingMode = null;
 let aiDifficulty = 'normal';
 let pendingChessVariant = null;
 let chessAiDifficulty = 'normal';
 let gomokuAiDifficulty = 'normal';
+let othelloAiDifficulty = 'normal';
 
 function activeOnline() {
   if (onlineGameType === 'chess') return chessOnline;
   if (onlineGameType === 'gomoku') return gomokuOnline;
+  if (onlineGameType === 'othello') return othelloOnline;
   return online;
 }
 
 function returnFromLobby() {
   if (onlineGameType === 'chess') showChessMenu();
   else if (onlineGameType === 'gomoku') showGomokuMenu();
+  else if (onlineGameType === 'othello') showOthelloMenu();
   else showTetrisMenu();
 }
 
@@ -151,7 +160,9 @@ function showHub() {
   game?.stop();
   chessApp?.stop();
   gomokuApp?.stop();
+  othelloApp?.stop();
   gomokuOnline?.leave();
+  othelloOnline?.leave();
   chessOnline?.leave();
   ui.hideGameOver();
   ui.hidePause();
@@ -162,8 +173,10 @@ function showTetrisMenu() {
   game?.stop();
   chessApp?.stop();
   gomokuApp?.stop();
+  othelloApp?.stop();
   document.getElementById('ai-difficulty')?.classList.add('hidden');
   document.getElementById('gomoku-ai-difficulty')?.classList.add('hidden');
+  document.getElementById('othello-ai-difficulty')?.classList.add('hidden');
   ui?.hideGameOver();
   ui?.hidePause();
   hub?.show('tetrisMenu');
@@ -173,6 +186,7 @@ function showChessMenu() {
   game?.stop();
   chessApp?.stop();
   gomokuApp?.stop();
+  othelloApp?.stop();
   chessOnline?.leave();
   pendingChessVariant = null;
   resetChessMenuPanels();
@@ -183,9 +197,20 @@ function showGomokuMenu() {
   game?.stop();
   chessApp?.stop();
   gomokuApp?.stop();
+  othelloApp?.stop();
   gomokuOnline?.leave();
   document.getElementById('gomoku-ai-difficulty')?.classList.add('hidden');
   hub?.show('gomokuMenu');
+}
+
+function showOthelloMenu() {
+  game?.stop();
+  chessApp?.stop();
+  gomokuApp?.stop();
+  othelloApp?.stop();
+  othelloOnline?.leave();
+  document.getElementById('othello-ai-difficulty')?.classList.add('hidden');
+  hub?.show('othelloMenu');
 }
 
 function startGomoku(playMode) {
@@ -196,6 +221,16 @@ function startGomoku(playMode) {
   });
   hub?.show('gomokuGame');
   document.getElementById('gomoku-ai-difficulty')?.classList.add('hidden');
+}
+
+function startOthello(playMode) {
+  if (!othelloApp) return;
+  othelloApp.start({
+    playMode,
+    aiDifficulty: othelloAiDifficulty,
+  });
+  hub?.show('othelloGame');
+  document.getElementById('othello-ai-difficulty')?.classList.add('hidden');
 }
 
 function bindClick(id, handler) {
@@ -222,6 +257,8 @@ function initApp() {
       chessGame: document.getElementById('chess-game-screen'),
       gomokuMenu: document.getElementById('gomoku-menu-screen'),
       gomokuGame: document.getElementById('gomoku-game-screen'),
+      othelloMenu: document.getElementById('othello-menu-screen'),
+      othelloGame: document.getElementById('othello-game-screen'),
       game: document.getElementById('game-screen'),
       lobby: document.getElementById('lobby-screen'),
     });
@@ -271,6 +308,27 @@ function initApp() {
       gomokuOnline = { leave() {}, openLobby() {}, createRoom: async () => {}, joinRoom: async () => {}, ready() {} };
     }
 
+    try {
+      othelloApp = new OthelloApp({
+        board: document.getElementById('othello-board'),
+        status: document.getElementById('othello-status'),
+        title: document.getElementById('othello-mode-label'),
+        hint: document.getElementById('othello-controls-hint'),
+      });
+      othelloOnline = new OthelloOnlineController({
+        othelloApp,
+        ui,
+        lobby,
+        hub,
+        onReturnMenu: showOthelloMenu,
+      });
+      othelloOnline.init();
+    } catch (err) {
+      console.error('[Game Hall] Othello module failed to load', err);
+      othelloApp = { stop() {}, start() {}, reset() {} };
+      othelloOnline = { leave() {}, openLobby() {}, createRoom: async () => {}, joinRoom: async () => {}, ready() {} };
+    }
+
     showHub();
   } catch (err) {
     console.error('[Game Hall] init failed', err);
@@ -294,9 +352,15 @@ function bindMenuEvents() {
     showGomokuMenu();
   });
 
+  bindClick('hub-othello-btn', () => {
+    unlockAudio();
+    showOthelloMenu();
+  });
+
   bindClick('tetris-hub-back', () => showHub());
   bindClick('chess-hub-back', () => showHub());
   bindClick('gomoku-hub-back', () => showHub());
+  bindClick('othello-hub-back', () => showHub());
 
   document.querySelectorAll('[data-chess-variant]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -379,6 +443,42 @@ function bindMenuEvents() {
   });
   bindClick('gomoku-reset-btn', () => gomokuApp?.reset());
 
+  document.querySelectorAll('[data-othello-play]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      unlockAudio();
+      const play = btn.dataset.othelloPlay;
+      if (play === 'ai') {
+        document.getElementById('othello-ai-difficulty')?.classList.remove('hidden');
+        return;
+      }
+      if (play === 'online') {
+        setOnlineGameType('othello');
+        othelloOnline?.openLobby();
+        return;
+      }
+      startOthello('local');
+    });
+  });
+
+  document.querySelectorAll('.othello-diff-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.othello-diff-btn').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      othelloAiDifficulty = btn.dataset.othelloDiff;
+    });
+  });
+
+  bindClick('othello-start-ai-btn', () => {
+    unlockAudio();
+    startOthello('ai');
+  });
+
+  bindClick('othello-back-btn', () => {
+    othelloOnline?.leave();
+    showOthelloMenu();
+  });
+  bindClick('othello-reset-btn', () => othelloApp?.reset());
+
   document.querySelectorAll('.menu-btn[data-mode]').forEach((btn) => {
     btn.addEventListener('click', () => {
       unlockAudio();
@@ -441,14 +541,18 @@ function bindMenuEvents() {
     game.stop();
     chessApp?.stop();
     gomokuApp?.stop();
+    othelloApp?.stop();
     document.getElementById('ai-difficulty')?.classList.add('hidden');
     document.getElementById('chess-ai-difficulty')?.classList.add('hidden');
     document.getElementById('gomoku-ai-difficulty')?.classList.add('hidden');
+    document.getElementById('othello-ai-difficulty')?.classList.add('hidden');
     document.getElementById('hub-screen')?.classList.add('hidden');
     document.getElementById('chess-menu-screen')?.classList.add('hidden');
     document.getElementById('chess-game-screen')?.classList.add('hidden');
     document.getElementById('gomoku-menu-screen')?.classList.add('hidden');
     document.getElementById('gomoku-game-screen')?.classList.add('hidden');
+    document.getElementById('othello-menu-screen')?.classList.add('hidden');
+    document.getElementById('othello-game-screen')?.classList.add('hidden');
     openTetrisLobby();
     ui.elements.lobbyScreen.classList.remove('hidden');
     ui.showScreen(ui.elements.lobbyScreen);
@@ -536,6 +640,12 @@ function setupHubDelegation() {
       e.preventDefault();
       unlockAudio();
       showGomokuMenu();
+      return;
+    }
+    if (btn.id === 'hub-othello-btn') {
+      e.preventDefault();
+      unlockAudio();
+      showOthelloMenu();
     }
   });
 }

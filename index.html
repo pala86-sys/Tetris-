@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/chess.css">
   <link rel="stylesheet" href="css/gomoku.css">
+  <link rel="stylesheet" href="css/othello.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
@@ -24,6 +25,7 @@
         <button class="menu-btn accent" id="hub-tetris-btn">俄羅斯方塊</button>
         <button class="menu-btn accent" id="hub-chess-btn">象棋</button>
         <button class="menu-btn accent" id="hub-gomoku-btn">五子棋</button>
+        <button class="menu-btn accent" id="hub-othello-btn">黑白棋</button>
       </nav>
     </div>
 
@@ -152,6 +154,45 @@
       <p id="gomoku-status" class="gomoku-status"></p>
       <div id="gomoku-board" class="gomoku-board-wrap"></div>
       <p id="gomoku-controls-hint" class="gomoku-hint">點擊交叉點落子</p>
+    </div>
+
+    <!-- Othello Menu -->
+    <div id="othello-menu-screen" class="screen hidden">
+      <div class="othello-menu-inner">
+        <header class="title-block othello-title-block">
+          <h1 class="game-title cn-menu-title">黑白棋</h1>
+          <p class="subtitle othello-subtitle">選擇模式</p>
+        </header>
+        <nav class="menu-nav othello-mode-nav">
+          <button class="menu-btn" data-othello-play="local">雙人同機</button>
+          <button class="menu-btn" data-othello-play="ai">單人對 AI</button>
+          <button class="menu-btn accent" data-othello-play="online">線上對戰</button>
+        </nav>
+        <div id="othello-ai-difficulty" class="difficulty-panel hidden">
+          <p>AI 難度</p>
+          <div class="difficulty-btns othello-diff-btns">
+            <button class="diff-btn othello-diff-btn" data-othello-diff="easy">簡單</button>
+            <button class="diff-btn othello-diff-btn active" data-othello-diff="normal">普通</button>
+            <button class="diff-btn othello-diff-btn" data-othello-diff="hard">困難</button>
+          </div>
+          <button id="othello-start-ai-btn" type="button" class="menu-btn accent">開始對戰</button>
+        </div>
+        <nav class="menu-nav othello-menu-footer">
+          <button id="othello-hub-back" type="button" class="menu-btn menu-btn--compact">返回遊戲大廳</button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Othello Game -->
+    <div id="othello-game-screen" class="screen hidden">
+      <div class="game-header">
+        <button id="othello-back-btn" class="icon-btn">← 黑白棋選單</button>
+        <span id="othello-mode-label" class="mode-label"></span>
+        <button id="othello-reset-btn" class="icon-btn">↺ 重開</button>
+      </div>
+      <p id="othello-status" class="othello-status"></p>
+      <div id="othello-board" class="othello-board-wrap"></div>
+      <p id="othello-controls-hint" class="othello-hint">點擊綠點處落子</p>
     </div>
 
     <!-- Online Lobby -->
@@ -295,6 +336,6 @@
     </div>
   </div>
 
-  <script type="module" src="js/main.js?v=5"></script>
+  <script type="module" src="js/main.js?v=6"></script>
 </body>
 </html>
