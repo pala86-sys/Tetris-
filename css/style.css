@@ -47,6 +47,10 @@ body {
   display: block;
 }
 
+#game-screen:has(.tetris-touch-controls:not(.hidden)) {
+  padding-bottom: 130px;
+}
+
 /* Menu */
 .title-block {
   text-align: center;
@@ -556,13 +560,21 @@ canvas {
   }
 }
 
-/* Tetris 觸控操作面板 */
+/* Tetris 觸控操作面板：固定在畫面底部，捲動時仍可操作 */
 .tetris-touch-controls {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 1.5rem;
-  margin-top: 1.5rem;
+  padding: 0.75rem 0.5rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  background: rgba(10, 14, 23, 0.92);
+  backdrop-filter: blur(6px);
+  border-top: 1px solid var(--border);
 }
 
 .touch-controls-player {
