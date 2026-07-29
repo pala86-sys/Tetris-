@@ -11,6 +11,7 @@ import { GomokuApp } from './gomoku/gomoku-app.js';
 import { GomokuOnlineController } from './gomoku/gomoku-online.js';
 import { OthelloApp } from './othello/othello-app.js';
 import { OthelloOnlineController } from './othello/othello-online.js';
+import { MinesweeperApp } from './minesweeper/minesweeper-app.js';
 import { initGameRules, updateChessRulesButton } from './game-rules.js';
 
 class UI {
@@ -60,6 +61,8 @@ class UI {
     document.getElementById('gomoku-game-screen')?.classList.add('hidden');
     document.getElementById('othello-menu-screen')?.classList.add('hidden');
     document.getElementById('othello-game-screen')?.classList.add('hidden');
+    document.getElementById('minesweeper-menu-screen')?.classList.add('hidden');
+    document.getElementById('minesweeper-game-screen')?.classList.add('hidden');
     this.elements.lobbyScreen?.classList.add('hidden');
     this.elements.gameScreen.classList.remove('hidden');
     this.showScreen(this.elements.gameScreen);
@@ -70,6 +73,7 @@ class UI {
       [MODES.VERSUS_ONLINE]: '線上對戰',
     };
     this.elements.modeLabel.textContent = labels[mode] || '';
+    updateTouchControlsVisibility(mode);
   }
 
   showPause() {
@@ -103,6 +107,7 @@ let gomokuApp;
 let gomokuOnline;
 let othelloApp;
 let othelloOnline;
+let minesweeperApp;
 
 let pendingMode = null;
 let aiDifficulty = 'normal';
@@ -163,6 +168,7 @@ function showHub() {
   chessApp?.stop();
   gomokuApp?.stop();
   othelloApp?.stop();
+  minesweeperApp?.stop();
   gomokuOnline?.leave();
   othelloOnline?.leave();
   chessOnline?.leave();
@@ -176,6 +182,7 @@ function showTetrisMenu() {
   chessApp?.stop();
   gomokuApp?.stop();
   othelloApp?.stop();
+  minesweeperApp?.stop();
   document.getElementById('ai-difficulty')?.classList.add('hidden');
   document.getElementById('gomoku-ai-difficulty')?.classList.add('hidden');
   document.getElementById('othello-ai-difficulty')?.classList.add('hidden');
@@ -210,9 +217,25 @@ function showOthelloMenu() {
   chessApp?.stop();
   gomokuApp?.stop();
   othelloApp?.stop();
+  minesweeperApp?.stop();
   othelloOnline?.leave();
   document.getElementById('othello-ai-difficulty')?.classList.add('hidden');
   hub?.show('othelloMenu');
+}
+
+function showMinesweeperMenu() {
+  game?.stop();
+  chessApp?.stop();
+  gomokuApp?.stop();
+  othelloApp?.stop();
+  minesweeperApp?.stop();
+  hub?.show('minesweeperMenu');
+}
+
+function startMinesweeper(difficulty) {
+  if (!minesweeperApp) return;
+  minesweeperApp.start(difficulty);
+  hub?.show('minesweeperGame');
 }
 
 function startGomoku(playMode) {
@@ -261,6 +284,8 @@ function initApp() {
       gomokuGame: document.getElementById('gomoku-game-screen'),
       othelloMenu: document.getElementById('othello-menu-screen'),
       othelloGame: document.getElementById('othello-game-screen'),
+      minesweeperMenu: document.getElementById('minesweeper-menu-screen'),
+      minesweeperGame: document.getElementById('minesweeper-game-screen'),
       game: document.getElementById('game-screen'),
       lobby: document.getElementById('lobby-screen'),
     });
@@ -332,6 +357,22 @@ function initApp() {
       othelloOnline = { leave() {}, openLobby() {}, createRoom: async () => {}, joinRoom: async () => {}, ready() {} };
     }
 
+    try {
+      minesweeperApp = new MinesweeperApp({
+        board: document.getElementById('minesweeper-board'),
+        status: document.getElementById('minesweeper-status'),
+        title: document.getElementById('minesweeper-mode-label'),
+        hint: document.getElementById('minesweeper-controls-hint'),
+        minesLeft: document.getElementById('minesweeper-mines-left'),
+        timer: document.getElementById('minesweeper-timer'),
+        flagModeBtn: document.getElementById('minesweeper-flag-mode-btn'),
+      });
+    } catch (err) {
+      console.error('[Game Hall] Minesweeper module failed to load', err);
+      minesweeperApp = { stop() {}, start() {}, reset() {} };
+    }
+
+    setupTetrisTouchControls();
     showHub();
   } catch (err) {
     console.error('[Game Hall] init failed', err);
@@ -360,10 +401,16 @@ function bindMenuEvents() {
     showOthelloMenu();
   });
 
+  bindClick('hub-minesweeper-btn', () => {
+    unlockAudio();
+    showMinesweeperMenu();
+  });
+
   bindClick('tetris-hub-back', () => showHub());
   bindClick('chess-hub-back', () => showHub());
   bindClick('gomoku-hub-back', () => showHub());
   bindClick('othello-hub-back', () => showHub());
+  bindClick('minesweeper-hub-back', () => showHub());
 
   document.querySelectorAll('[data-chess-variant]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -481,6 +528,16 @@ function bindMenuEvents() {
     showOthelloMenu();
   });
   bindClick('othello-reset-btn', () => othelloApp?.reset());
+
+  document.querySelectorAll('[data-minesweeper-diff]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      unlockAudio();
+      startMinesweeper(btn.dataset.minesweeperDiff);
+    });
+  });
+
+  bindClick('minesweeper-back-btn', () => showMinesweeperMenu());
+  bindClick('minesweeper-reset-btn', () => minesweeperApp?.reset());
 
   document.querySelectorAll('.menu-btn[data-mode]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -649,6 +706,12 @@ function setupHubDelegation() {
       e.preventDefault();
       unlockAudio();
       showOthelloMenu();
+      return;
+    }
+    if (btn.id === 'hub-minesweeper-btn') {
+      e.preventDefault();
+      unlockAudio();
+      showMinesweeperMenu();
     }
   });
 }
@@ -680,6 +743,62 @@ function stopRepeater(playerIndex, action) {
   if (r.timeoutId) clearTimeout(r.timeoutId);
   if (r.intervalId) clearInterval(r.intervalId);
   repeaters.delete(key);
+}
+
+function updateTouchControlsVisibility(mode) {
+  const container = document.getElementById('tetris-touch-controls');
+  if (!container) return;
+  const isTouch = window.matchMedia('(pointer: coarse)').matches;
+  container.classList.toggle('hidden', !isTouch);
+
+  const p2Pad = document.getElementById('tetris-touch-p2');
+  p2Pad?.classList.toggle('hidden', mode !== MODES.VERSUS_HUMAN);
+}
+
+function setupTetrisTouchControls() {
+  const container = document.getElementById('tetris-touch-controls');
+  if (!container) return;
+
+  container.querySelectorAll('.touch-btn[data-action]').forEach((btn) => {
+    const pad = btn.closest('[data-touch-player]');
+    const rawIndex = pad ? Number(pad.dataset.touchPlayer) : 0;
+    const action = btn.dataset.action;
+
+    const press = (e) => {
+      e.preventDefault();
+      if (!game || !game.running || game.paused) return;
+      const playerIndex = rawIndex === 0 ? localPlayerIndex() : rawIndex;
+
+      if (action === 'down') {
+        setSoftDropHeld(playerIndex, true);
+      } else if (action === 'hardDrop') {
+        game.processLock(game.players[playerIndex]);
+      } else if (action === 'left' || action === 'right') {
+        game.handleInput('Touch', playerIndex, action);
+        startRepeater(playerIndex, action, () => game.handleInput('Touch', playerIndex, action));
+      } else {
+        game.handleInput('Touch', playerIndex, action);
+      }
+    };
+
+    const release = (e) => {
+      e.preventDefault();
+      if (!game) return;
+      const playerIndex = rawIndex === 0 ? localPlayerIndex() : rawIndex;
+
+      if (action === 'left' || action === 'right') {
+        stopRepeater(playerIndex, action);
+      } else if (action === 'down') {
+        setSoftDropHeld(playerIndex, false);
+      }
+    };
+
+    btn.addEventListener('pointerdown', press);
+    btn.addEventListener('pointerup', release);
+    btn.addEventListener('pointerleave', release);
+    btn.addEventListener('pointercancel', release);
+    btn.addEventListener('contextmenu', (e) => e.preventDefault());
+  });
 }
 
 function applySoftDrop(playerIndex) {

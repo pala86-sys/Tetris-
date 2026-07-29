@@ -1,0 +1,226 @@
+/* 踩地雷主選單 */
+#minesweeper-menu-screen.screen.active {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.minesweeper-menu-inner {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.minesweeper-title-block {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.minesweeper-subtitle {
+  letter-spacing: 0.15em;
+  text-indent: 0.15em;
+  text-align: center;
+}
+
+#minesweeper-menu-screen .menu-nav {
+  width: 100%;
+  align-items: center;
+  margin-bottom: 0;
+}
+
+#minesweeper-menu-screen .minesweeper-mode-nav {
+  gap: 0.75rem;
+}
+
+#minesweeper-menu-screen .menu-btn {
+  width: 100%;
+  max-width: 280px;
+  box-sizing: border-box;
+}
+
+.minesweeper-menu-footer {
+  width: 100%;
+  margin-top: 1.5rem;
+}
+
+.minesweeper-menu-footer .menu-btn--compact {
+  min-width: unset;
+  width: 100%;
+  max-width: 280px;
+  padding: 0.75rem 1.75rem;
+}
+
+/* 踩地雷對局 */
+#minesweeper-game-screen.screen.active {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 0 0.5rem;
+  box-sizing: border-box;
+}
+
+.minesweeper-stats {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1rem;
+  color: var(--accent);
+}
+
+.minesweeper-status {
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--accent);
+  margin-bottom: 0.75rem;
+  min-height: 1.5rem;
+}
+
+.minesweeper-status.winner {
+  color: #2ed573;
+  font-weight: 700;
+}
+
+.minesweeper-status.loser {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.minesweeper-toolbar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.minesweeper-flag-btn {
+  font-size: 0.85rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-panel);
+  color: var(--text);
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.minesweeper-flag-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.25);
+}
+
+.minesweeper-board-wrap {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 0 auto 1rem;
+  touch-action: manipulation;
+  -webkit-overflow-scrolling: touch;
+}
+
+.minesweeper-board {
+  display: grid;
+  gap: 1px;
+  padding: 4px;
+  background: #666;
+  border: 3px solid #888;
+  border-radius: 4px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  width: max-content;
+  max-width: 100%;
+}
+
+.minesweeper-cell {
+  width: 28px;
+  height: 28px;
+  min-width: 22px;
+  min-height: 22px;
+  border: none;
+  padding: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.minesweeper-cell.covered {
+  background: linear-gradient(145deg, #bdbdbd, #9e9e9e);
+  border: 2px outset #ccc;
+}
+
+.minesweeper-cell.covered.flag-mode {
+  background: linear-gradient(145deg, #a8d8ea, #7eb8d4);
+}
+
+.minesweeper-cell.covered:active:not(:disabled) {
+  border-style: inset;
+}
+
+.minesweeper-cell.revealed {
+  background: #e0e0e0;
+  border: 1px solid #bbb;
+  cursor: default;
+}
+
+.minesweeper-cell.revealed.chordable {
+  cursor: pointer;
+}
+
+.minesweeper-cell.revealed.chordable:active {
+  background: #d0d0d0;
+}
+
+.minesweeper-cell.flagged {
+  background: linear-gradient(145deg, #bdbdbd, #9e9e9e);
+  border: 2px outset #ccc;
+  font-size: 0.75rem;
+}
+
+.minesweeper-cell.mine {
+  background: #ff4757;
+}
+
+.minesweeper-hint {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  padding: 0 0.5rem;
+}
+
+@media (max-width: 520px) {
+  .minesweeper-cell {
+    width: 24px;
+    height: 24px;
+    font-size: 0.75rem;
+  }
+
+  .minesweeper-stats {
+    font-size: 0.9rem;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .minesweeper-cell {
+    width: 20px;
+    height: 20px;
+    font-size: 0.65rem;
+  }
+}

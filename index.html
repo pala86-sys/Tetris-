@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="css/chess.css">
   <link rel="stylesheet" href="css/gomoku.css">
   <link rel="stylesheet" href="css/othello.css">
+  <link rel="stylesheet" href="css/minesweeper.css">
   <link rel="stylesheet" href="css/rules.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,6 +28,7 @@
         <button class="menu-btn accent" id="hub-chess-btn">象棋</button>
         <button class="menu-btn accent" id="hub-gomoku-btn">五子棋</button>
         <button class="menu-btn accent" id="hub-othello-btn">黑白棋</button>
+        <button class="menu-btn accent" id="hub-minesweeper-btn">踩地雷</button>
       </nav>
     </div>
 
@@ -220,6 +222,49 @@
       <p id="othello-controls-hint" class="othello-hint">點擊綠點處落子</p>
     </div>
 
+    <!-- Minesweeper Menu -->
+    <div id="minesweeper-menu-screen" class="screen hidden">
+      <div class="minesweeper-menu-inner">
+        <header class="title-block minesweeper-title-block">
+          <h1 class="game-title cn-menu-title">踩地雷</h1>
+          <p class="subtitle minesweeper-subtitle">選擇難度</p>
+        </header>
+        <nav class="menu-nav minesweeper-mode-nav">
+          <button class="menu-btn accent" data-minesweeper-diff="easy">初級（9×9 · 10 雷）</button>
+          <button class="menu-btn accent" data-minesweeper-diff="medium">中級（16×16 · 40 雷）</button>
+          <button class="menu-btn accent" data-minesweeper-diff="hard">高級（16×30 · 99 雷）</button>
+        </nav>
+        <nav class="menu-nav menu-nav--rules">
+          <button type="button" class="menu-btn" data-rules="minesweeper">遊戲規則</button>
+        </nav>
+        <nav class="menu-nav minesweeper-menu-footer">
+          <button id="minesweeper-hub-back" type="button" class="menu-btn menu-btn--compact">返回遊戲大廳</button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Minesweeper Game -->
+    <div id="minesweeper-game-screen" class="screen hidden">
+      <div class="game-header">
+        <button id="minesweeper-back-btn" class="icon-btn">← 踩地雷選單</button>
+        <span id="minesweeper-mode-label" class="mode-label"></span>
+        <div class="game-header-actions">
+          <button type="button" class="icon-btn rules-icon-btn" data-rules="minesweeper" title="遊戲規則">?</button>
+          <button id="minesweeper-reset-btn" class="icon-btn">↺ 重開</button>
+        </div>
+      </div>
+      <div class="minesweeper-stats">
+        <span id="minesweeper-mines-left">💣 10</span>
+        <span id="minesweeper-timer">⏱ 0s</span>
+      </div>
+      <p id="minesweeper-status" class="minesweeper-status">點擊格子開始</p>
+      <div class="minesweeper-toolbar">
+        <button type="button" id="minesweeper-flag-mode-btn" class="minesweeper-flag-btn">🚩 插旗模式</button>
+      </div>
+      <div id="minesweeper-board" class="minesweeper-board-wrap"></div>
+      <p id="minesweeper-controls-hint" class="minesweeper-hint">點擊揭開 · 插旗模式或右鍵插旗</p>
+    </div>
+
     <!-- Online Lobby -->
     <div id="lobby-screen" class="screen hidden">
       <header class="title-block lobby-title">
@@ -339,6 +384,37 @@
                 <canvas class="hold-canvas" data-player="1" width="80" height="56"></canvas>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="tetris-touch-controls" class="tetris-touch-controls hidden" aria-label="觸控操作">
+        <div class="touch-controls-player" data-touch-player="0">
+          <p class="touch-controls-label">玩家 1</p>
+          <div class="touch-pad">
+            <button type="button" class="touch-btn" data-action="rotateCCW" aria-label="逆時針旋轉">↺</button>
+            <button type="button" class="touch-btn" data-action="left" aria-label="左移">←</button>
+            <button type="button" class="touch-btn" data-action="down" aria-label="軟降">↓</button>
+            <button type="button" class="touch-btn" data-action="right" aria-label="右移">→</button>
+            <button type="button" class="touch-btn" data-action="rotate" aria-label="旋轉">↻</button>
+          </div>
+          <div class="touch-actions">
+            <button type="button" class="touch-btn touch-btn--wide" data-action="hold" aria-label="保留">保留</button>
+            <button type="button" class="touch-btn touch-btn--wide accent" data-action="hardDrop" aria-label="硬降">硬降</button>
+          </div>
+        </div>
+        <div class="touch-controls-player hidden" id="tetris-touch-p2" data-touch-player="1">
+          <p class="touch-controls-label">玩家 2</p>
+          <div class="touch-pad">
+            <button type="button" class="touch-btn" data-action="rotateCCW" aria-label="逆時針旋轉">↺</button>
+            <button type="button" class="touch-btn" data-action="left" aria-label="左移">←</button>
+            <button type="button" class="touch-btn" data-action="down" aria-label="軟降">↓</button>
+            <button type="button" class="touch-btn" data-action="right" aria-label="右移">→</button>
+            <button type="button" class="touch-btn" data-action="rotate" aria-label="旋轉">↻</button>
+          </div>
+          <div class="touch-actions">
+            <button type="button" class="touch-btn touch-btn--wide" data-action="hold" aria-label="保留">保留</button>
+            <button type="button" class="touch-btn touch-btn--wide accent" data-action="hardDrop" aria-label="硬降">硬降</button>
           </div>
         </div>
       </div>

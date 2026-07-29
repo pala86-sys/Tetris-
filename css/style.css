@@ -555,3 +555,64 @@ canvas {
     padding: 0.5rem;
   }
 }
+
+/* Tetris 觸控操作面板 */
+.tetris-touch-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.touch-controls-player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.touch-controls-label {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.touch-pad,
+.touch-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.touch-btn {
+  font-family: inherit;
+  font-size: 1.1rem;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-panel);
+  color: var(--text);
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.touch-btn:active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.touch-btn--wide {
+  width: auto;
+  min-width: 72px;
+  padding: 0 1rem;
+  font-size: 0.85rem;
+}
+
+.touch-btn.accent {
+  border-color: var(--accent);
+  color: var(--accent);
+}
